@@ -74,6 +74,10 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: auto; /* only ever scrolls without JS (fixed-col prerender) */
+  /* Reserve the scrollbar's space permanently: without this, the vertical
+     bar appearing steals width from the fixed-cols lines and triggers a
+     horizontal scrollbar. The reserved width is measured in remeasure(). */
+  scrollbar-gutter: stable;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 176, 0, 0.35) transparent;
 }

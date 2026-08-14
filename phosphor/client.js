@@ -142,15 +142,23 @@ export function createTerminal({
   function remeasure() {
     const { charW, lineH } = measureChar(term);
     const cs = getComputedStyle(crt);
+    // Space the vertical scrollbar occupies inside the screen (0 for overlay
+    // scrollbars; ~15px for classic ones, held constant by the CSS
+    // scrollbar-gutter reservation). Columns must fit BESIDE it, or its
+    // appearance would force a horizontal scrollbar.
+    const gutter = screen.offsetWidth - screen.clientWidth;
     const avail =
-      crt.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      crt.clientWidth -
+      parseFloat(cs.paddingLeft) -
+      parseFloat(cs.paddingRight) -
+      gutter;
     const cols = computeCols(avail, charW, cfg.maxCols, cfg.minCols);
     const changed = cols !== state.cols || charW !== state.charW;
     state.cols = cols;
     state.charW = charW;
-    // Size the column to a whole number of cells so fractional char widths
-    // can't wrap or clip the last column.
-    term.style.width = `${(cols * charW).toFixed(2)}px`;
+    // Size the column to a whole number of cells (plus the scrollbar gutter)
+    // so fractional char widths can't wrap or clip the last column.
+    term.style.width = `${(cols * charW + gutter).toFixed(2)}px`;
 
     // The header renders at the new width BEFORE the row snap so its real
     // height (which varies with cols) is subtracted from the screen's share.
@@ -385,6 +393,10 @@ export function createTerminal({
     }
     renderAll();
     ro.observe(crt);
+    // Fallback for browsers without scrollbar-gutter: a classic scrollbar
+    // appearing shrinks the screen's content box, which fires the observer
+    // and re-runs the measurement with the new gutter width.
+    ro.observe(screen);
     if (matchMedia('(pointer: fine)').matches) input.focus();
   }
 
