@@ -1,0 +1,261 @@
+/* project-80s — amber phosphor CRT terminal. Dark mode only, on purpose. */
+
+/* ------------------------------------------------------------------ */
+/* Palette                                                            */
+/* ------------------------------------------------------------------ */
+:root {
+  --bg: #0d0805;
+  --bg-deep: #050302;
+  --amber: #ffb000;
+
+  /* ANSI-ish accents, tuned warm so they live in the phosphor world */
+  --black: #2a1f14;
+  --red: #ff5f56;
+  --green: #7dff8a;
+  --yellow: #ffd75f;
+  --blue: #6ea8ff;
+  --magenta: #ff7ae2;
+  --cyan: #7de8ff;
+  --white: #e8dcc8;
+  --brblack: #8a7660;
+  --brred: #ff938c;
+  --brgreen: #b5ffbe;
+  --bryellow: #ffe89e;
+  --brblue: #9cc4ff;
+  --brmagenta: #ffa8ec;
+  --brcyan: #b0f1ff;
+  --brwhite: #fff6e3;
+
+  --font: "Cascadia Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(ellipse 120% 90% at 50% 40%, var(--bg) 0%, var(--bg-deep) 100%);
+  color: var(--amber);
+  font: 16px/1.3 var(--font);
+  overflow: hidden;
+}
+
+/* ------------------------------------------------------------------ */
+/* Shell layout                                                       */
+/* ------------------------------------------------------------------ */
+#crt {
+  height: 100dvh;
+  padding: 20px 16px 12px;
+  display: flex;
+  justify-content: center;
+}
+
+#term {
+  /* JS sets an exact px width = cols × charW; this is the no-JS default,
+     sized for the 80-column pre-rendered welcome screen. */
+  width: min(100%, 80ch);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  position: relative; /* anchors the measurement probe */
+  /* Phosphor glow — currentColor makes every palette color glow correctly */
+  text-shadow:
+    0 0 2px currentColor,
+    0 0 8px rgba(255, 176, 0, 0.28);
+}
+
+#screen {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: auto; /* only ever scrolls without JS (fixed 80-col render) */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 176, 0, 0.35) transparent;
+}
+
+.line {
+  white-space: pre; /* padding spaces are load-bearing */
+  height: 1lh; /* every row is exactly one cell tall — keeps the grid scroll-aligned */
+}
+
+.block {
+  /* whole-row margin, so scroll offsets stay row-aligned */
+  margin: 0 0 1lh;
+}
+
+.measure-probe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  visibility: hidden;
+  white-space: pre;
+}
+
+::selection {
+  background: var(--amber);
+  color: var(--bg);
+  text-shadow: none;
+}
+
+/* ------------------------------------------------------------------ */
+/* Inline styles produced by render.js                                */
+/* ------------------------------------------------------------------ */
+.b { font-weight: 700; }
+.dim { opacity: 0.55; }
+.u { text-decoration: underline; text-underline-offset: 2px; }
+
+/* --seg carries the segment's own color so inverse/hover can swap it
+   with the background without resorting to currentColor tricks. */
+.tlink { color: var(--cyan); --seg: var(--cyan); text-decoration: underline; text-underline-offset: 2px; }
+
+.c-black    { color: var(--black);     --seg: var(--black); }
+.c-red      { color: var(--red);       --seg: var(--red); }
+.c-green    { color: var(--green);     --seg: var(--green); }
+.c-yellow   { color: var(--yellow);    --seg: var(--yellow); }
+.c-blue     { color: var(--blue);      --seg: var(--blue); }
+.c-magenta  { color: var(--magenta);   --seg: var(--magenta); }
+.c-cyan     { color: var(--cyan);      --seg: var(--cyan); }
+.c-white    { color: var(--white);     --seg: var(--white); }
+.c-brblack  { color: var(--brblack);   --seg: var(--brblack); }
+.c-brred    { color: var(--brred);     --seg: var(--brred); }
+.c-brgreen  { color: var(--brgreen);   --seg: var(--brgreen); }
+.c-bryellow { color: var(--bryellow);  --seg: var(--bryellow); }
+.c-brblue   { color: var(--brblue);    --seg: var(--brblue); }
+.c-brmagenta{ color: var(--brmagenta); --seg: var(--brmagenta); }
+.c-brcyan   { color: var(--brcyan);    --seg: var(--brcyan); }
+.c-brwhite  { color: var(--brwhite);   --seg: var(--brwhite); }
+
+.inv {
+  background: var(--seg, var(--amber));
+  color: var(--bg);
+  text-shadow: none;
+}
+
+/* Buttons & command-links: real focusable elements drawn as characters */
+.tbtn {
+  font: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  color: inherit;
+  cursor: pointer;
+  text-shadow: inherit;
+}
+
+.tbtn:hover,
+.tlink:hover,
+.tbtn:focus-visible,
+.tlink:focus-visible {
+  background: var(--seg, var(--amber));
+  color: var(--bg);
+  text-shadow: none;
+  outline: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .blink { animation: blink 1s steps(1) infinite; }
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+/* ------------------------------------------------------------------ */
+/* Prompt line                                                        */
+/* ------------------------------------------------------------------ */
+#prompt {
+  display: flex;
+  gap: 1ch;
+  padding-top: 0.5lh;
+  align-items: baseline;
+}
+
+.ps1 {
+  color: var(--amber);
+  font-weight: 700;
+}
+
+#cmd {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  font-size: 16px; /* ≥16px prevents iOS focus zoom */
+  background: transparent;
+  border: 0;
+  outline: none;
+  padding: 0;
+  color: var(--brwhite);
+  caret-color: var(--amber);
+  text-shadow: inherit;
+}
+
+#prompt.busy {
+  opacity: 0.45;
+}
+
+#prompt.busy .ps1::after {
+  content: "…";
+}
+
+/* ------------------------------------------------------------------ */
+/* CRT overlay: scanlines + vignette (+ gentle flicker)               */
+/* ------------------------------------------------------------------ */
+#overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0) 0 2px,
+      rgba(0, 0, 0, 0.22) 2px 4px
+    ),
+    radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 55%, rgba(0, 0, 0, 0.42) 100%);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  #overlay {
+    animation: flicker 3.4s ease-in-out infinite;
+  }
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  38% { opacity: 0.96; }
+  41% { opacity: 1; }
+  73% { opacity: 0.97; }
+  76% { opacity: 1; }
+}
+
+/* ------------------------------------------------------------------ */
+/* Chrome extras                                                      */
+/* ------------------------------------------------------------------ */
+#colsbadge {
+  position: fixed;
+  right: 12px;
+  bottom: 8px;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  opacity: 0.35;
+  pointer-events: none;
+  user-select: none;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

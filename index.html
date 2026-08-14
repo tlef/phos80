@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
+  <title>PROJECT 80s — amber phosphor terminal</title>
+  <meta name="description" content="A modern website that thinks it is 1983: an amber phosphor terminal interface with character-drawn frames, responsive reflow, and a command line.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%230d0805'/%3E%3Ctext x='2' y='12' font-family='monospace' font-size='11' fill='%23ffb000'%3E%26gt;_%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="crt">
+    <div id="term">
+      <div id="header"></div>
+      <main id="screen" aria-label="terminal output">
+        <!-- Pre-rendered at 80 columns by the same pure pipeline the client
+             runs (see scratch gen-ssr.mjs). Fully readable without JS; main.js
+             re-renders it from js/welcome.js at the measured width on boot. -->
+<div class="block"><div class="line"><span>                                                                                </span></div>
+<div class="line"><span>                       </span><span class="c-bryellow b">░▒▓█  P R O J E C T   8 0 s  █▓▒░</span><span>                        </span></div>
+<div class="line"><span>                      </span><span class="dim">AMBER PHOSPHOR TERMINAL · EST. 2026</span><span>                       </span></div>
+<div class="line"><span>                                                                                </span></div>
+<div class="line"><span>╔═</span><span class="b"> SYSTEM </span><span>═════════════════════════════════════════════════════════════════════╗</span></div>
+<div class="line"><span>║ </span><span>Welcome to a modern website that thinks it is 1983.</span><span>                         </span><span> ║</span></div>
+<div class="line"><span>║ </span><span>                                                                            </span><span> ║</span></div>
+<div class="line"><span>║ </span><span>Every frame, border and margin on this screen is drawn with real characters</span><span> </span><span> ║</span></div>
+<div class="line"><span>║ </span><span>— box glyphs and padding spaces — and re-drawn from its document model</span><span>      </span><span> ║</span></div>
+<div class="line"><span>║ </span><span>whenever the window resizes. Type a command below, or press a button.</span><span>       </span><span> ║</span></div>
+<div class="line"><span>║ </span><span>                                                                            </span><span> ║</span></div>
+<div class="line"><span>║ </span><span>                                             </span><span class="dim">last login:</span><span> </span><span class="c-cyan">2026-08-11</span><span> </span><span class="dim">on ttyS0</span><span> ║</span></div>
+<div class="line"><span>╚══════════════════════════════════════════════════════════════════════════════╝</span></div>
+<div class="line"><span>                                                                                </span></div>
+<div class="line"><span>                  </span><button type="button" class="tbtn c-brwhite b" data-cmd="help">[ HELP ]</button><span>  </span><button type="button" class="tbtn c-brwhite b" data-cmd="about">[ ABOUT ]</button><span>  </span><button type="button" class="tbtn c-brwhite b" data-cmd="news 1">[ NEWS ]</button><span>  </span><button type="button" class="tbtn c-brwhite b" data-cmd="mode page">[ PAGE MODE ]</button><span>                  </span></div>
+<div class="line"><span>                                                                                </span></div>
+<div class="line"><span>                          </span><span class="dim">curious?</span><span> </span><a class="tlink" href="https://en.wikipedia.org/wiki/Computer_terminal" target="_blank" rel="noopener">what is a terminal?</a><span>                          </span></div></div>
+      </main>
+      <form id="prompt" autocomplete="off">
+        <label class="ps1" for="cmd" aria-hidden="true">&gt;</label>
+        <input id="cmd" type="text" spellcheck="false" autocapitalize="off"
+               aria-label="command input" placeholder="type help">
+      </form>
+    </div>
+  </div>
+  <div id="overlay" aria-hidden="true"></div>
+  <div id="colsbadge" aria-hidden="true">80 COLS</div>
+  <div id="sr-live" class="sr-only" role="status" aria-live="polite"></div>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
