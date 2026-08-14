@@ -1,8 +1,9 @@
-// welcome.js — the initial screen's document model.
+// demo/content.js — the demo site's content docs.
 //
-// Imported by main.js for hydration AND by the SSR generator that produces
-// the static pre-rendered HTML in index.html. One source of truth; on a real
-// backend this doc would be rendered server-side from the same code.
+// SITE content, not framework code: everything here is plain protocol JSON
+// (see PROTOCOL.md). A real site would produce docs like these server-side.
+// Imported by demo.js for hydration AND by tools/gen-ssr.mjs to prerender
+// demo/index.html — one source of truth.
 
 export const WELCOME_DOC = {
   widgets: [
@@ -46,5 +47,21 @@ export const WELCOME_DOC = {
       align: 'center',
       content: '[dim]curious?[/dim] [link=https://en.wikipedia.org/wiki/Computer_terminal]what is a terminal?[/link]',
     },
+  ],
+};
+
+// Default header shown above the screen in page mode (the news pages install
+// their own via the response's `header` field; `header: null` restores this).
+export const HEADER_DOC = {
+  widgets: [
+    {
+      type: 'columns',
+      min: 12,
+      children: [
+        { type: 'text', content: '[bryellow][b]▓▒░ PROJECT 80s[/b][/bryellow]' },
+        { type: 'text', align: 'right', content: '[dim]sys[/dim] [green]OK[/green] · [cyan]ttyS0[/cyan]' },
+      ],
+    },
+    { type: 'rule', char: '═' },
   ],
 };

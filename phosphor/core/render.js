@@ -15,14 +15,16 @@ const ESC = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;
 
 export const escapeHTML = (s) => String(s).replace(/[&<>"']/g, (c) => ESC[c]);
 
+// All classes are p80- prefixed so the framework never collides with host
+// site styles.
 function classesFor(style = {}) {
   const cls = [];
-  if (style.color && style.color !== 'amber') cls.push('c-' + style.color);
-  if (style.bold) cls.push('b');
-  if (style.dim) cls.push('dim');
-  if (style.underline) cls.push('u');
-  if (style.inverse) cls.push('inv');
-  if (style.blink) cls.push('blink');
+  if (style.color && style.color !== 'amber') cls.push('p80-c-' + style.color);
+  if (style.bold) cls.push('p80-b');
+  if (style.dim) cls.push('p80-dim');
+  if (style.underline) cls.push('p80-u');
+  if (style.inverse) cls.push('p80-inv');
+  if (style.blink) cls.push('p80-blink');
   return cls;
 }
 
@@ -40,11 +42,11 @@ function renderSeg(s) {
   const cls = classesFor(s.style);
 
   if (s.command != null) {
-    cls.unshift('tbtn');
+    cls.unshift('p80-btn');
     return `<button type="button" class="${cls.join(' ')}" data-cmd="${escapeHTML(s.command)}">${text}</button>`;
   }
   if (s.href != null) {
-    cls.unshift('tlink');
+    cls.unshift('p80-link');
     const safe = safeHref(s.href);
     if (safe) {
       const extra = safe.external ? ' target="_blank" rel="noopener"' : '';
@@ -56,9 +58,9 @@ function renderSeg(s) {
   return `<span class="${cls.join(' ')}">${text}</span>`;
 }
 
-/** Render lines to HTML. Merge-friendly: one <div class="line"> per row. */
+/** Render lines to HTML. Merge-friendly: one <div class="p80-line"> per row. */
 export function renderLines(lines) {
   return lines
-    .map((line) => `<div class="line">${line.map(renderSeg).join('')}</div>`)
+    .map((line) => `<div class="p80-line">${line.map(renderSeg).join('')}</div>`)
     .join('\n');
 }

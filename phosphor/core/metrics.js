@@ -10,7 +10,7 @@ export const MIN_COLS = 20;
 /** Measure the character cell inside `container`. → { charW, lineH } */
 export function measureChar(container) {
   const probe = document.createElement('span');
-  probe.className = 'measure-probe';
+  probe.className = 'p80-probe';
   probe.textContent = '0'.repeat(100);
   container.appendChild(probe);
   const rect = probe.getBoundingClientRect();
@@ -18,9 +18,9 @@ export function measureChar(container) {
   return { charW: rect.width / 100 || 8, lineH: rect.height || 16 };
 }
 
-/** Columns that fit in `availPx` at `charW`, floored, clamped to [MIN_COLS, maxCols]. */
-export function computeCols(availPx, charW, maxCols = Infinity) {
-  return Math.max(MIN_COLS, Math.min(maxCols, Math.floor(availPx / charW)));
+/** Columns that fit in `availPx` at `charW`, floored, clamped to [minCols, maxCols]. */
+export function computeCols(availPx, charW, maxCols = Infinity, minCols = MIN_COLS) {
+  return Math.max(minCols, Math.min(maxCols, Math.floor(availPx / charW)));
 }
 
 export function debounce(fn, ms) {
