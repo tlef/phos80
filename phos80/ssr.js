@@ -1,10 +1,10 @@
-// phosphor/ssr.js — server-side rendering (Node; no DOM required).
+// phos80/ssr.js — server-side rendering (Node; no DOM required).
 //
 // Renders a protocol doc to the exact HTML the client produces, for SEO /
 // no-JS prerenders. Embed the output inside a .p80-screen element of the
 // skeleton (see USAGE.md §5), or use the CLI from any build pipeline:
 //
-//   node phosphor/ssr.js path/to/doc.json [cols] > screen.html
+//   node phos80/ssr.js path/to/doc.json [cols] > screen.html
 
 import { layoutDoc, visLen } from './core/layout.js';
 import { renderLines } from './core/render.js';
@@ -29,7 +29,7 @@ function assertWidth(lines, cols) {
     .filter(([, n]) => n !== cols);
   if (bad.length) {
     throw new Error(
-      `phosphor: layout width violation at ${cols} cols on line(s) ${bad
+      `phos80: layout width violation at ${cols} cols on line(s) ${bad
         .map(([i, n]) => `${i} (${n})`)
         .join(', ')}`
     );
@@ -46,7 +46,7 @@ const isCLI =
 if (isCLI) {
   const [, , docPath, colsArg] = process.argv;
   if (!docPath) {
-    console.error('usage: node phosphor/ssr.js <doc.json> [cols]');
+    console.error('usage: node phos80/ssr.js <doc.json> [cols]');
     process.exit(2);
   }
   const { readFileSync } = await import('node:fs');

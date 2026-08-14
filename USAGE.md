@@ -1,16 +1,16 @@
-# Using Phosphor
+# Using phos80
 
-Phosphor is a retro-terminal UI framework for websites. Your site supplies **documents** (JSON widget trees with BBCode-style inline markup, see [PROTOCOL.md](PROTOCOL.md)); Phosphor renders them as a responsive amber-phosphor character terminal — frames and alignment drawn with real box glyphs and padding spaces, reflowed on resize, with clickable links/buttons, a command prompt, and optional SSR.
+phos80 is a server-driven retro terminal UI library for websites. Your site supplies **documents** (JSON widget trees with BBCode-style inline markup, see [PROTOCOL.md](PROTOCOL.md)); phos80 renders them as a responsive amber-phosphor character terminal — frames and alignment drawn with real box glyphs and padding spaces, reflowed on resize, with clickable links/buttons, a command prompt, and optional SSR.
 
-Phosphor contains **no content**. Every screen the visitor sees comes from your site: the initial doc, the transport responses, and a few chrome docs. The `demo/` directory is a complete reference site.
+phos80 contains **no content**. Every screen the visitor sees comes from your site: the initial doc, the transport responses, and a few chrome docs. The `demo/` directory is a complete reference site.
 
 ## 1. Include it
 
 ```html
-<link rel="stylesheet" href="phosphor/phosphor.css">
+<link rel="stylesheet" href="phos80/phos80.css">
 <div id="terminal"></div>
 <script type="module">
-  import { createTerminal } from './phosphor/client.js';
+  import { createTerminal } from 'phos80/client';
 
   const term = createTerminal({
     mount: document.getElementById('terminal'),
@@ -26,7 +26,9 @@ Phosphor contains **no content**. Every screen the visitor sees comes from your 
 </script>
 ```
 
-Give the mount element a height (`#terminal { height: 100dvh }` for full screen). If `mount` is empty, Phosphor builds its own skeleton; if it contains a server-prerendered skeleton (§5), Phosphor adopts it in place.
+Give the mount element a height (`#terminal { height: 100dvh }` for full screen). If `mount` is empty, phos80 builds its own skeleton; if it contains a server-prerendered skeleton (§5), phos80 adopts it in place.
+
+The `phos80/client` specifiers come from installing via npm (`npm i github:tlef/project-80s`), which also brings TypeScript declarations — including `phos80/protocol` types (`Doc`, `Widget`, `Envelope`) for compile-time checking of API handlers. Without npm, use relative paths (`./phos80/client.js`); the framework is plain ES modules.
 
 ## 2. The contract in one paragraph
 
@@ -99,7 +101,7 @@ Available: `--p80-bg`, `--p80-bg-deep`, `--p80-amber`, `--p80-font`, and the 16 
 The rendering pipeline is isomorphic — no DOM. On any Node (server, build step, CI):
 
 ```js
-import { renderScreen } from './phosphor/ssr.js';
+import { renderScreen } from 'phos80/ssr';
 const html = renderScreen(welcomeDoc, { cols: 80 });   // → HTML string
 ```
 
@@ -108,7 +110,7 @@ Embed that inside the skeleton's `.p80-screen` element (copy the skeleton shape 
 Non-Node backends: emit protocol JSON at runtime (it's just JSON), and prerender at build time with the CLI:
 
 ```
-node phosphor/ssr.js page-doc.json 80 > screen.html
+node phos80/ssr.js page-doc.json 80 > screen.html
 ```
 
 ## 6. What your site is responsible for

@@ -1,4 +1,4 @@
-// phosphor/client.js — createTerminal(): the client-side terminal shell.
+// phos80/client.js — createTerminal(): the client-side terminal shell.
 //
 // FRAMEWORK ONLY — this file contains no site content. Every screen the
 // visitor sees comes from the site: via `transport` (command → envelope),
@@ -89,8 +89,8 @@ export function createTerminal({
   chrome = {},
   commands = {},
 } = {}) {
-  if (!mount) throw new Error('phosphor: config.mount is required');
-  if (typeof transport !== 'function') throw new Error('phosphor: config.transport is required');
+  if (!mount) throw new Error('phos80: config.mount is required');
+  if (typeof transport !== 'function') throw new Error('phos80: config.transport is required');
 
   const cfg = { ...DEFAULT_SETTINGS, ...settings };
   const chr = {

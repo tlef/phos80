@@ -1,6 +1,6 @@
 // tools/gen-ssr.mjs — regenerates demo/index.html.
 //
-// Runs the framework's own SSR module (phosphor/ssr.js) over the demo's
+// Runs the framework's own SSR module (phos80/ssr.js) over the demo's
 // welcome doc and writes a host page containing the prerendered skeleton —
 // exactly what a real server would emit. Run after changing demo content:
 //
@@ -8,7 +8,7 @@
 
 import { writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { renderScreen, renderText } from '../phosphor/ssr.js';
+import { renderScreen, renderText } from '../phos80/ssr.js';
 import { WELCOME_DOC } from '../demo/content.js';
 
 const COLS = 80;
@@ -26,7 +26,7 @@ const page = `<!DOCTYPE html>
   <title>PROJECT 80s — amber phosphor terminal</title>
   <meta name="description" content="A modern website that thinks it is 1983: an amber phosphor terminal interface with character-drawn frames, responsive reflow, and a command line.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%230d0805'/%3E%3Ctext x='2' y='12' font-family='monospace' font-size='11' fill='%23ffb000'%3E%26gt;_%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="../phosphor/phosphor.css">
+  <link rel="stylesheet" href="../phos80/phos80.css">
   <style>
     /* Host-page concerns only — the component styles itself. */
     html, body { height: 100%; }

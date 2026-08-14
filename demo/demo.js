@@ -1,10 +1,10 @@
-// demo/demo.js — the reference consumer of the Phosphor framework.
+// demo/demo.js — the reference consumer of the phos80 framework.
 //
 // Everything a site must do lives in this file: mount, transport, content.
-// It uses only the documented entry point (phosphor/client.js); if the demo
+// It uses only the documented entry point (phos80/client.js); if the demo
 // needs framework internals, the framework API is wrong.
 
-import { createTerminal } from '../phosphor/client.js';
+import { createTerminal } from '../phos80/client.js';
 import { execute } from './api.mock.js';
 import { WELCOME_DOC, HEADER_DOC } from './content.js';
 

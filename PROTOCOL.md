@@ -1,6 +1,6 @@
-# Phosphor Protocol v1
+# phos80 Protocol v1
 
-The contract between a site's API and the Phosphor terminal UI. A backend in any language can speak it: it is JSON plus a small inline markup syntax. The framework renders docs; it never defines what they say.
+The contract between a site's API and the phos80 terminal UI. A backend in any language can speak it: it is JSON plus a small inline markup syntax. The framework renders docs; it never defines what they say.
 
 ## 1. Envelope
 

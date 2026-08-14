@@ -1,0 +1,40 @@
+{
+  "name": "phos80",
+  "version": "0.1.0",
+  "description": "Server-driven retro terminal UI for the web: your API sends JSON documents, phos80 renders them as a responsive phosphor-CRT terminal with real character-drawn chrome. SSR included, zero dependencies.",
+  "type": "module",
+  "exports": {
+    "./client": {
+      "types": "./types/client.d.ts",
+      "default": "./phos80/client.js"
+    },
+    "./ssr": {
+      "types": "./types/ssr.d.ts",
+      "default": "./phos80/ssr.js"
+    },
+    "./protocol": {
+      "types": "./types/protocol.d.ts"
+    },
+    "./phos80.css": "./phos80/phos80.css"
+  },
+  "scripts": {
+    "gen-ssr": "node tools/gen-ssr.mjs",
+    "demo": "python3 -m http.server 8000"
+  },
+  "keywords": [
+    "terminal",
+    "retro",
+    "crt",
+    "ui",
+    "server-driven-ui",
+    "ssr",
+    "bbs",
+    "tui",
+    "phosphor"
+  ],
+  "author": "Tim Lefler",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tlef/project-80s.git"
+  }
+}
