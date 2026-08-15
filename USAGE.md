@@ -28,7 +28,7 @@ phos80 contains **no content**. Every screen the visitor sees comes from your si
 
 Give the mount element a height (`#terminal { height: 100dvh }` for full screen). If `mount` is empty, phos80 builds its own skeleton; if it contains a server-prerendered skeleton (§5), phos80 adopts it in place.
 
-The `phos80/client` specifiers come from installing via npm (`npm i github:tlef/project-80s`), which also brings TypeScript declarations — including `phos80/protocol` types (`Doc`, `Widget`, `Envelope`) for compile-time checking of API handlers. Without npm, use relative paths (`./phos80/client.js`); the framework is plain ES modules.
+The `phos80/client` specifiers come from installing via npm (`npm i github:tlef/phos80`), which also brings TypeScript declarations — including `phos80/protocol` types (`Doc`, `Widget`, `Envelope`) for compile-time checking of API handlers. Without npm, use relative paths (`./phos80/client.js`); the framework is plain ES modules.
 
 ## 2. The contract in one paragraph
 

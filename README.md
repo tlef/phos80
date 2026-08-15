@@ -12,7 +12,7 @@ The name: **phos**phor + **80** — the eighties, and 80 columns. Everything the
 ## Install
 
 ```
-npm i github:tlef/project-80s
+npm i github:tlef/phos80
 ```
 
 ```js
