@@ -64,10 +64,15 @@
   flex-direction: column;
   min-width: 0;
   position: relative; /* anchors the measurement probe */
-  /* Phosphor glow — currentColor makes every palette color glow correctly */
+  /* Phosphor glow — currentColor makes every palette color glow correctly.
+     Intensity via --p80-glow (0..1); the p80-fx-noglow class kills it. */
   text-shadow:
     0 0 2px currentColor,
-    0 0 8px rgba(255, 176, 0, 0.28);
+    0 0 8px color-mix(in srgb, currentColor calc(28% * var(--p80-glow, 1)), transparent);
+}
+
+.p80-fx-noglow .p80-term {
+  text-shadow: none;
 }
 
 .p80-screen {
@@ -219,13 +224,19 @@
   inset: 0;
   pointer-events: none;
   z-index: 10;
+  /* Scanline / vignette intensity via --p80-scanlines / --p80-vignette
+     (0..1; 0 disables). */
   background:
     repeating-linear-gradient(
       to bottom,
-      rgba(0, 0, 0, 0) 0 2px,
-      rgba(0, 0, 0, 0.22) 2px 4px
+      rgb(0 0 0 / 0) 0 2px,
+      rgb(0 0 0 / calc(0.22 * var(--p80-scanlines, 1))) 2px 4px
     ),
-    radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 55%, rgba(0, 0, 0, 0.42) 100%);
+    radial-gradient(ellipse at center, rgb(0 0 0 / 0) 55%, rgb(0 0 0 / calc(0.42 * var(--p80-vignette, 1))) 100%);
+}
+
+.p80-fx-noflicker .p80-overlay {
+  animation: none;
 }
 
 @media (prefers-reduced-motion: no-preference) {

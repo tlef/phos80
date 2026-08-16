@@ -5,6 +5,10 @@ import type { Doc } from './protocol.js';
 export interface RenderOptions {
   /** Column count to lay out at. Default 80. */
   cols?: number;
+  /** Charset for frames/rules. Default 'unicode'. */
+  borders?: 'unicode' | 'ascii';
+  /** Target for http(s) links. Default '_blank'. */
+  externalLinks?: '_blank' | '_self';
 }
 
 /**

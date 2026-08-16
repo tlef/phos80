@@ -9,16 +9,20 @@
 import { layoutDoc, visLen } from './core/layout.js';
 import { renderLines } from './core/render.js';
 
-/** Doc → HTML string for one screen block (innerHTML of .p80-screen). */
-export function renderScreen(doc, { cols = 80 } = {}) {
-  const lines = layoutDoc(doc, cols);
+/**
+ * Doc → HTML string for one screen block (innerHTML of .p80-screen).
+ * opts: cols (default 80), borders ('unicode' | 'ascii'),
+ * externalLinks ('_blank' | '_self').
+ */
+export function renderScreen(doc, { cols = 80, borders, externalLinks } = {}) {
+  const lines = layoutDoc(doc, cols, { borders });
   assertWidth(lines, cols);
-  return `<div class="p80-block">${renderLines(lines)}</div>`;
+  return `<div class="p80-block">${renderLines(lines, { externalLinks })}</div>`;
 }
 
 /** Doc → plain text at `cols`, e.g. for previews or text-only user agents. */
-export function renderText(doc, { cols = 80 } = {}) {
-  return layoutDoc(doc, cols)
+export function renderText(doc, { cols = 80, borders } = {}) {
+  return layoutDoc(doc, cols, { borders })
     .map((line) => line.map((s) => s.text).join(''))
     .join('\n');
 }

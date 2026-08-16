@@ -36,7 +36,7 @@ function safeHref(href) {
   return null;
 }
 
-function renderSeg(s) {
+function renderSeg(s, opts) {
   if (!s.text) return '';
   const text = escapeHTML(s.text);
   const cls = classesFor(s.style);
@@ -49,7 +49,8 @@ function renderSeg(s) {
     cls.unshift('p80-link');
     const safe = safeHref(s.href);
     if (safe) {
-      const extra = safe.external ? ' target="_blank" rel="noopener"' : '';
+      const target = opts?.externalLinks ?? '_blank';
+      const extra = safe.external && target === '_blank' ? ' target="_blank" rel="noopener"' : '';
       return `<a class="${cls.join(' ')}" href="${escapeHTML(safe.href)}"${extra}>${text}</a>`;
     }
     return `<a class="${cls.join(' ')}" href="#" data-cmd="${escapeHTML(s.href)}">${text}</a>`;
@@ -58,9 +59,12 @@ function renderSeg(s) {
   return `<span class="${cls.join(' ')}">${text}</span>`;
 }
 
-/** Render lines to HTML. Merge-friendly: one <div class="p80-line"> per row. */
-export function renderLines(lines) {
+/**
+ * Render lines to HTML. Merge-friendly: one <div class="p80-line"> per row.
+ * opts.externalLinks: '_blank' (default) | '_self'.
+ */
+export function renderLines(lines, opts) {
   return lines
-    .map((line) => `<div class="p80-line">${line.map(renderSeg).join('')}</div>`)
+    .map((line) => `<div class="p80-line">${line.map((s) => renderSeg(s, opts)).join('')}</div>`)
     .join('\n');
 }

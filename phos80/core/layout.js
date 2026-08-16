@@ -82,19 +82,32 @@ export function wrapSegs(segs, width) {
 // Widgets
 // ---------------------------------------------------------------------------
 
+// Two charsets: box-drawing glyphs, or pure ASCII (opts.borders = 'ascii')
+// for fonts without box-drawing coverage — or for maximum retro.
 const BORDERS = {
-  single: { tl: '┌', tr: '┐', bl: '└', br: '┘', h: '─', v: '│' },
-  double: { tl: '╔', tr: '╗', bl: '╚', br: '╝', h: '═', v: '║' },
+  unicode: {
+    single: { tl: '┌', tr: '┐', bl: '└', br: '┘', h: '─', v: '│' },
+    double: { tl: '╔', tr: '╗', bl: '╚', br: '╝', h: '═', v: '║' },
+    rule: '─',
+  },
+  ascii: {
+    single: { tl: '+', tr: '+', bl: '+', br: '+', h: '-', v: '|' },
+    double: { tl: '+', tr: '+', bl: '+', br: '+', h: '=', v: '|' },
+    rule: '-',
+  },
 };
 
-/** Doc { widgets: Widget[] } → StyledLine[], each exactly `cols` wide. */
-export function layoutDoc(doc, cols) {
+/**
+ * Doc { widgets: Widget[] } → StyledLine[], each exactly `cols` wide.
+ * opts.borders: 'unicode' (default) | 'ascii'.
+ */
+export function layoutDoc(doc, cols, opts = {}) {
   const lines = [];
-  for (const w of doc?.widgets ?? []) layoutWidget(w, cols, lines);
+  for (const w of doc?.widgets ?? []) layoutWidget(w, cols, lines, opts);
   return lines;
 }
 
-function layoutWidget(w, cols, out) {
+function layoutWidget(w, cols, out, opts) {
   switch (w.type) {
     case 'text': {
       for (const para of String(w.content ?? '').split('\n')) {
@@ -110,15 +123,16 @@ function layoutWidget(w, cols, out) {
       break;
     }
     case 'rule': {
-      const ch = (w.char ?? '─')[0] ?? '─';
+      const set = BORDERS[opts?.borders] ?? BORDERS.unicode;
+      const ch = (w.char ?? set.rule)[0] ?? set.rule;
       out.push([seg(ch.repeat(cols), { color: w.color, dim: w.color == null })]);
       break;
     }
     case 'frame':
-      layoutFrame(w, cols, out);
+      layoutFrame(w, cols, out, opts);
       break;
     case 'columns':
-      layoutColumns(w, cols, out);
+      layoutColumns(w, cols, out, opts);
       break;
     case 'buttons':
       layoutButtons(w, cols, out);
@@ -128,8 +142,9 @@ function layoutWidget(w, cols, out) {
   }
 }
 
-function layoutFrame(w, cols, out) {
-  const b = BORDERS[w.border] ?? BORDERS.single;
+function layoutFrame(w, cols, out, opts) {
+  const set = BORDERS[opts?.borders] ?? BORDERS.unicode;
+  const b = set[w.border] ?? set.single;
   const bs = w.color ? { color: w.color } : {};
   const inner = Math.max(1, cols - 4); // "│ content │"
 
@@ -145,7 +160,7 @@ function layoutFrame(w, cols, out) {
 
   // Children laid out at the inner width, then wrapped in border columns.
   const kid = [];
-  for (const child of w.children ?? []) layoutWidget(child, inner, kid);
+  for (const child of w.children ?? []) layoutWidget(child, inner, kid, opts);
   for (const line of kid) {
     out.push([seg(b.v + ' ', bs), ...padSegs(line, inner), seg(' ' + b.v, bs)]);
   }
@@ -161,7 +176,7 @@ function layoutFrame(w, cols, out) {
  * next row, responsive-window style); at narrow viewports everything stacks
  * full-width. `widths` are relative weights within a row.
  */
-function layoutColumns(w, cols, out) {
+function layoutColumns(w, cols, out, opts) {
   const kids = w.children ?? [];
   if (!kids.length) return;
   const gap = w.gap ?? 2;
@@ -183,7 +198,7 @@ function layoutColumns(w, cols, out) {
     // padding shorter columns with blank rows.
     const blocks = row.map((child, j) => {
       const lines = [];
-      layoutWidget(child, widths[j], lines);
+      layoutWidget(child, widths[j], lines, opts);
       return lines;
     });
     const height = Math.max(...blocks.map((b) => b.length));

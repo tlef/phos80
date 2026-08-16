@@ -58,7 +58,15 @@ const term = createTerminal({
     typeCps: 10000,                    // typewriter speed (chars/sec); 0 = instant
     maxScrollback: 1000,
     mode: 'scroll',                    // 'scroll' | 'page' (BBS-style full screens)
+    borderSet: 'unicode',              // 'ascii' draws frames with +--| instead of box glyphs
+    autoFocus: true,                   // focus prompt on load/after commands (fine-pointer only)
+    focusOnClick: true,                // clicking empty screen space focuses the prompt
+    echo: true,                        // echo commands into the scrollback
+    historyKey: null,                  // e.g. 'myapp' → ↑/↓ history persists in localStorage
+    externalLinks: '_blank',           // target for http(s) links; '_self' for same tab
   },
+
+  theme: 'green',                      // see §4; omit to use stylesheet defaults
 
   chrome: {                            // the few strings/docs the shell itself needs
     prompt: '>',
@@ -84,17 +92,57 @@ const term = createTerminal({
 });
 ```
 
-Instance API: `term.dispatch(cmd)` · `term.print(doc)` · `term.setHeader(doc | null)` · `term.setMode('page' | 'scroll')` · `term.clear()` · `term.focus()` · `term.remeasure()` · `term.mode` / `term.cols` (getters) · `term.destroy()`.
+Instance API: `term.dispatch(cmd)` · `term.print(doc)` · `term.setHeader(doc | null)` · `term.setMode('page' | 'scroll')` · `term.setTheme(theme | null)` · `term.clear()` · `term.focus()` · `term.remeasure()` · `term.mode` / `term.cols` (getters) · `term.destroy()`.
 
 ## 4. Theming
 
-Every color reads a `--p80-*` custom property; override any of them on the mount (or any ancestor):
+### Presets
 
-```css
-#terminal { --p80-amber: #33ff66; --p80-bg: #020805; }   /* green phosphor */
+Four palettes named after real CRT phosphors, each with its own temperature-tuned 16-color accent set: **`amber`** (P3, the default), **`green`** (P1 — Apple II/VT100), **`white`** (P4 paper-white), **`ice`** (blue-white).
+
+```js
+createTerminal({ theme: 'green', … })          // preset by name
+term.setTheme('ice');                          // switch at runtime
+term.setTheme(null);                           // back to stylesheet defaults
 ```
 
-Available: `--p80-bg`, `--p80-bg-deep`, `--p80-amber`, `--p80-font`, and the 16 palette names (`--p80-red`, `--p80-brwhite`, …). All rendered classes are `p80-`prefixed; the component never styles the host page.
+Granular form — override colors, tune the CRT effects:
+
+```js
+theme: {
+  preset: 'green',
+  colors: { bg: '#020805', cyan: '#8ff' },     // any palette key, or 'font'
+  effects: {
+    scanlines: 0.5,    // false | true | 0..1  ← the interlace lines
+    glow: true,        // false | true | 0..1
+    flicker: false,    // false disables the overlay flicker
+    vignette: true,    // false | true | 0..1
+  },
+}
+```
+
+('`amber`' is the protocol's name for the *default foreground*, whatever hue the theme gives it — `[amber]` in BBCode always means "default text color".)
+
+### CSS variables
+
+With no `theme` configured, everything reads `--p80-*` custom properties which you can set from any CSS ancestor:
+
+```css
+#terminal { --p80-amber: #33ff66; --p80-bg: #020805; --p80-scanlines: 0; }
+```
+
+Available: `--p80-bg`, `--p80-bg-deep`, `--p80-amber`, `--p80-font`, the 16 palette names (`--p80-red`, `--p80-brwhite`, …), and effect intensities `--p80-scanlines` / `--p80-vignette` / `--p80-glow` (0..1). Precedence note: a configured `theme` is applied as inline styles on the mount and **wins over** site CSS — pick one mechanism.
+
+### SSR without a theme flash
+
+For a non-default theme, inline the same variables into the server markup:
+
+```js
+import { themeCSS } from 'phos80/themes';
+`<div id="terminal" class="p80" style="${themeCSS('green')}">…skeleton…</div>`
+```
+
+All rendered classes are `p80-`prefixed; the component never styles the host page.
 
 ## 5. SSR / SEO
 

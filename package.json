@@ -15,6 +15,10 @@
     "./protocol": {
       "types": "./types/protocol.d.ts"
     },
+    "./themes": {
+      "types": "./types/themes.d.ts",
+      "default": "./phos80/themes.js"
+    },
     "./phos80.css": "./phos80/phos80.css"
   },
   "scripts": {

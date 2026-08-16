@@ -12,6 +12,7 @@ import { layoutDoc, seg, wrapSegs, padSegs } from './core/layout.js';
 import { renderLines } from './core/render.js';
 import { measureChar, computeCols, debounce } from './core/metrics.js';
 import { typeIn } from './core/typewriter.js';
+import { themeVars } from './themes.js';
 
 const DEFAULT_SETTINGS = {
   maxCols: 80, // viewport width cap, in character cells (terminal stays centered)
@@ -19,7 +20,15 @@ const DEFAULT_SETTINGS = {
   typeCps: 10000, // typewriter reveal speed, characters per second; 0 = instant
   maxScrollback: 1000,
   mode: 'scroll', // 'scroll' | 'page'
+  borderSet: 'unicode', // 'unicode' | 'ascii' — charset for frames/rules
+  autoFocus: true, // focus the prompt on load / after commands (fine-pointer devices only)
+  focusOnClick: true, // clicking empty screen space focuses the prompt
+  echo: true, // echo commands into the scrollback (scroll mode)
+  historyKey: null, // localStorage key suffix to persist command history across visits
+  externalLinks: '_blank', // target for http(s) links: '_blank' | '_self'
 };
+
+const HISTORY_MAX = 100;
 
 // Neutral shell chrome. A framework may ship minimal status/error phrasing;
 // it may not ship content — welcome screens, help text etc. belong to the site.
@@ -80,6 +89,9 @@ const SKELETON = `
  * @param {object} [config.commands]     Client-side commands. `clear: true` and
  *   `mode: true` enable the built-ins (default on); a function value
  *   `(args, term) => doc|string|null|Promise` adds a local command.
+ * @param {string|object} [config.theme] Palette preset name ('amber' | 'green'
+ *   | 'white' | 'ice') or { preset, colors, effects } — see themes.js. When
+ *   omitted, the stylesheet defaults (and any site CSS overrides) apply.
  */
 export function createTerminal({
   mount,
@@ -88,6 +100,7 @@ export function createTerminal({
   settings = {},
   chrome = {},
   commands = {},
+  theme,
 } = {}) {
   if (!mount) throw new Error('phos80: config.mount is required');
   if (typeof transport !== 'function') throw new Error('phos80: config.transport is required');
@@ -122,6 +135,58 @@ export function createTerminal({
   input.setAttribute('aria-label', chr.inputLabel);
   if (!chr.colsBadge) badge.remove();
 
+  // --- Theme -----------------------------------------------------------------
+  // Applied as inline --p80-* properties on the mount, so it wins over site
+  // CSS. When no theme is configured, nothing is set and the stylesheet
+  // defaults (and any site CSS variable overrides) stay in charge.
+
+  const appliedVars = [];
+
+  function applyTheme(t) {
+    for (const prop of appliedVars) mount.style.removeProperty(prop);
+    appliedVars.length = 0;
+    mount.classList.remove('p80-fx-noglow', 'p80-fx-noflicker');
+    if (t == null) return;
+
+    const setVar = (prop, value) => {
+      mount.style.setProperty(prop, String(value));
+      appliedVars.push(prop);
+    };
+    for (const [prop, value] of Object.entries(themeVars(t))) setVar(prop, value);
+
+    // Effects: false → off, true/undefined → full, number → 0..1 intensity.
+    const fx = (typeof t === 'object' && t.effects) || {};
+    const level = (v) => (v === false ? 0 : v === true || v == null ? 1 : v);
+    if (fx.scanlines !== undefined) setVar('--p80-scanlines', level(fx.scanlines));
+    if (fx.vignette !== undefined) setVar('--p80-vignette', level(fx.vignette));
+    if (fx.glow === false) mount.classList.add('p80-fx-noglow');
+    else if (fx.glow !== undefined) setVar('--p80-glow', level(fx.glow));
+    if (fx.flicker === false) mount.classList.add('p80-fx-noflicker');
+  }
+
+  applyTheme(theme);
+
+  const historyStore = cfg.historyKey ? `p80:history:${cfg.historyKey}` : null;
+
+  function loadHistory() {
+    if (!historyStore) return [];
+    try {
+      const saved = JSON.parse(localStorage.getItem(historyStore) ?? '[]');
+      return Array.isArray(saved) ? saved.slice(-HISTORY_MAX) : [];
+    } catch {
+      return []; // storage unavailable (privacy mode etc.)
+    }
+  }
+
+  function saveHistory() {
+    if (!historyStore) return;
+    try {
+      localStorage.setItem(historyStore, JSON.stringify(state.history.slice(-HISTORY_MAX)));
+    } catch {
+      /* best-effort */
+    }
+  }
+
   const state = {
     mode: cfg.mode,
     scrollback: [], // { kind: 'echo', text } | { kind: 'doc', doc }
@@ -129,10 +194,11 @@ export function createTerminal({
     header: chr.header, // header doc shown in page mode (API-replaceable)
     cols: cfg.maxCols,
     charW: 8,
-    history: [],
+    history: loadHistory(),
     hIdx: 0,
     busy: false,
   };
+  state.hIdx = state.history.length;
 
   const ac = new AbortController(); // detaches every listener on destroy()
   const signal = ac.signal;
@@ -182,13 +248,16 @@ export function createTerminal({
 
   // --- Rendering (always from retained models) ----------------------------
 
+  const layoutOpts = { borders: cfg.borderSet };
+  const renderOpts = { externalLinks: cfg.externalLinks };
+
   const blockHTML = (doc) =>
-    `<div class="p80-block">${renderLines(layoutDoc(doc, state.cols))}</div>`;
+    `<div class="p80-block">${renderLines(layoutDoc(doc, state.cols, layoutOpts), renderOpts)}</div>`;
 
   function echoHTML(text) {
     const segs = [seg(`${chr.prompt} `, { dim: true }), seg(text, { color: 'brwhite' })];
     const lines = wrapSegs(segs, state.cols).map((l) => padSegs(l, state.cols));
-    return `<div class="p80-block p80-echo">${renderLines(lines)}</div>`;
+    return `<div class="p80-block p80-echo">${renderLines(lines, renderOpts)}</div>`;
   }
 
   const entryHTML = (e) => (e.kind === 'echo' ? echoHTML(e.text) : blockHTML(e.doc));
@@ -197,7 +266,7 @@ export function createTerminal({
   function renderHeader() {
     headerEl.innerHTML =
       state.mode === 'page' && state.header
-        ? renderLines(layoutDoc(state.header, state.cols))
+        ? renderLines(layoutDoc(state.header, state.cols, layoutOpts), renderOpts)
         : '';
   }
 
@@ -277,6 +346,7 @@ export function createTerminal({
     if (!cmd || state.busy) return;
     state.history.push(cmd);
     state.hIdx = state.history.length;
+    saveHistory();
 
     const [verb, ...args] = cmd.toLowerCase().split(/\s+/);
     const local = cmds[verb];
@@ -286,7 +356,7 @@ export function createTerminal({
       clear();
       return;
     }
-    if (state.mode === 'scroll') appendEcho(cmd);
+    if (cfg.echo && state.mode === 'scroll') appendEcho(cmd);
     if (local === true && verb === 'mode') {
       await presentDoc(setMode(args[0]));
       return;
@@ -314,7 +384,7 @@ export function createTerminal({
   function setBusy(b) {
     state.busy = b;
     form.classList.toggle('p80-busy', b);
-    if (!b && matchMedia('(pointer: fine)').matches) input.focus();
+    if (!b && cfg.autoFocus && matchMedia('(pointer: fine)').matches) input.focus();
   }
 
   // --- Input line -----------------------------------------------------------
@@ -359,6 +429,7 @@ export function createTerminal({
       // Clicking empty screen space focuses the prompt (but never steal a
       // text selection or a real link click).
       if (
+        cfg.focusOnClick &&
         screen.contains(e.target) &&
         !e.target.closest('a, button') &&
         getSelection().isCollapsed
@@ -397,7 +468,7 @@ export function createTerminal({
     // appearing shrinks the screen's content box, which fires the observer
     // and re-runs the measurement with the new gutter width.
     ro.observe(screen);
-    if (matchMedia('(pointer: fine)').matches) input.focus();
+    if (cfg.autoFocus && matchMedia('(pointer: fine)').matches) input.focus();
   }
 
   boot();
@@ -411,6 +482,11 @@ export function createTerminal({
     setMode: (m) => presentDoc(setMode(m)),
     clear,
     focus: () => input.focus(),
+    setTheme: (t) => {
+      applyTheme(t);
+      // A theme may change the font → character metrics; re-check.
+      if (remeasure()) renderAll();
+    },
     remeasure: () => {
       if (remeasure()) renderAll();
     },

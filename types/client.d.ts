@@ -1,6 +1,7 @@
 // Types for phos80/client — createTerminal().
 
 import type { Doc, Envelope } from './protocol.js';
+import type { Theme } from './themes.js';
 
 export interface TerminalSettings {
   /** Grid clamp, in character cells. Default 80. */
@@ -13,6 +14,18 @@ export interface TerminalSettings {
   maxScrollback?: number;
   /** Default 'scroll'. */
   mode?: 'scroll' | 'page';
+  /** Charset for frames/rules. Default 'unicode'. */
+  borderSet?: 'unicode' | 'ascii';
+  /** Focus the prompt on load / after commands (fine-pointer only). Default true. */
+  autoFocus?: boolean;
+  /** Clicking empty screen space focuses the prompt. Default true. */
+  focusOnClick?: boolean;
+  /** Echo commands into the scrollback (scroll mode). Default true. */
+  echo?: boolean;
+  /** localStorage key suffix to persist command history. Default null (off). */
+  historyKey?: string | null;
+  /** Target for http(s) links. Default '_blank'. */
+  externalLinks?: '_blank' | '_self';
 }
 
 export interface TerminalChrome {
@@ -57,6 +70,11 @@ export interface TerminalConfig {
    * command.
    */
   commands?: Record<string, boolean | LocalCommand>;
+  /**
+   * Palette preset name or { preset, colors, effects }. When omitted, the
+   * stylesheet defaults (and site CSS variable overrides) apply.
+   */
+  theme?: Theme;
 }
 
 export interface TerminalInstance {
@@ -64,6 +82,8 @@ export interface TerminalInstance {
   print(doc: Doc): Promise<void>;
   setHeader(doc: Doc | null): void;
   setMode(mode: 'scroll' | 'page'): Promise<void>;
+  /** Apply a theme at runtime; null restores the stylesheet defaults. */
+  setTheme(theme: Theme | null): void;
   clear(): void;
   focus(): void;
   remeasure(): void;
