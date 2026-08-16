@@ -84,6 +84,10 @@ export interface TerminalInstance {
   setMode(mode: 'scroll' | 'page'): Promise<void>;
   /** Apply a theme at runtime; null restores the stylesheet defaults. */
   setTheme(theme: Theme | null): void;
+  /** Update settings at runtime (typeCps, maxCols, borderSet, echo, …). */
+  configure(settings: Partial<TerminalSettings>): void;
+  /** Snapshot of the current effective settings. */
+  readonly settings: Required<TerminalSettings>;
   clear(): void;
   focus(): void;
   remeasure(): void;

@@ -99,5 +99,21 @@ createTerminal({
       applyThemeState(term);
       return `${name} ${fmtEffect(name)}`;
     },
+
+    // Typewriter speed: `speed 2000`, `speed off` (instant), `speed default`.
+    speed: (args, term) => {
+      const v = args[0];
+      if (!v) {
+        const cps = term.settings.typeCps;
+        return `typewriter: ${cps <= 0 ? '[red]off[/red]' : `[yellow]${cps}[/yellow] cps`} [dim]— usage: speed[/dim] [green]<cps>[/green]|[green]off[/green]|[green]default[/green]`;
+      }
+      let cps;
+      if (v === 'off' || v === 'instant') cps = 0;
+      else if (v === 'default') cps = 10000;
+      else if (!Number.isNaN(Number(v))) cps = Math.max(0, Number(v));
+      else return '[red]usage:[/red] speed [green]<cps>[/green]|[green]off[/green]|[green]default[/green]';
+      term.configure({ typeCps: cps });
+      return `typewriter ${cps <= 0 ? '[red]off[/red] — instant paint' : `set to [yellow]${cps}[/yellow] cps`}`;
+    },
   },
 });

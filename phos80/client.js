@@ -248,16 +248,17 @@ export function createTerminal({
 
   // --- Rendering (always from retained models) ----------------------------
 
-  const layoutOpts = { borders: cfg.borderSet };
-  const renderOpts = { externalLinks: cfg.externalLinks };
+  // Read cfg at call time so configure() changes take effect immediately.
+  const layoutOpts = () => ({ borders: cfg.borderSet });
+  const renderOpts = () => ({ externalLinks: cfg.externalLinks });
 
   const blockHTML = (doc) =>
-    `<div class="p80-block">${renderLines(layoutDoc(doc, state.cols, layoutOpts), renderOpts)}</div>`;
+    `<div class="p80-block">${renderLines(layoutDoc(doc, state.cols, layoutOpts()), renderOpts())}</div>`;
 
   function echoHTML(text) {
     const segs = [seg(`${chr.prompt} `, { dim: true }), seg(text, { color: 'brwhite' })];
     const lines = wrapSegs(segs, state.cols).map((l) => padSegs(l, state.cols));
-    return `<div class="p80-block p80-echo">${renderLines(lines, renderOpts)}</div>`;
+    return `<div class="p80-block p80-echo">${renderLines(lines, renderOpts())}</div>`;
   }
 
   const entryHTML = (e) => (e.kind === 'echo' ? echoHTML(e.text) : blockHTML(e.doc));
@@ -266,7 +267,7 @@ export function createTerminal({
   function renderHeader() {
     headerEl.innerHTML =
       state.mode === 'page' && state.header
-        ? renderLines(layoutDoc(state.header, state.cols, layoutOpts), renderOpts)
+        ? renderLines(layoutDoc(state.header, state.cols, layoutOpts()), renderOpts())
         : '';
   }
 
@@ -486,6 +487,17 @@ export function createTerminal({
       applyTheme(t);
       // A theme may change the font → character metrics; re-check.
       if (remeasure()) renderAll();
+    },
+    /**
+     * Update settings at runtime (typeCps, maxCols, borderSet, echo, …).
+     * Use setMode() for the display mode. Re-lays-out if the grid changed.
+     */
+    configure: (partial = {}) => {
+      Object.assign(cfg, partial);
+      if (remeasure()) renderAll();
+    },
+    get settings() {
+      return { ...cfg };
     },
     remeasure: () => {
       if (remeasure()) renderAll();
