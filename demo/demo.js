@@ -11,6 +11,23 @@ import { WELCOME_DOC, HEADER_DOC } from './content.js';
 
 const THEME_NAMES = Object.keys(THEMES);
 
+// The demo's theme/effects state. setTheme() applies a whole config, so
+// local commands merge their changes here and reapply.
+const themeState = { preset: 'amber', effects: {} };
+
+const EFFECT_NAMES = ['scanlines', 'glow', 'flicker', 'vignette'];
+
+function applyThemeState(term) {
+  term.setTheme({ preset: themeState.preset, effects: themeState.effects });
+}
+
+function fmtEffect(name) {
+  const v = themeState.effects[name];
+  if (v === false) return '[red]off[/red]';
+  if (typeof v === 'number') return `[yellow]${v}[/yellow]`;
+  return '[green]on[/green]';
+}
+
 createTerminal({
   mount: document.getElementById('terminal'),
 
@@ -43,8 +60,44 @@ createTerminal({
           THEME_NAMES.map((n) => `[green]${n}[/green]`).join('|')
         );
       }
-      term.setTheme(name);
+      themeState.preset = name;
+      applyThemeState(term);
       return `phosphor set to [b]${name}[/b]`;
+    },
+
+    // CRT effect toggles: `effects scanlines off`, `effects glow 0.5`, …
+    // `effects` alone shows the current state.
+    effects: (args, term) => {
+      const [name, value] = args;
+      if (!name) {
+        return {
+          widgets: [
+            {
+              type: 'frame',
+              title: 'EFFECTS',
+              children: EFFECT_NAMES.map((n) => ({
+                type: 'text',
+                content: `[brwhite][b]${n}[/b][/brwhite]${' '.repeat(Math.max(1, 12 - n.length))}${fmtEffect(n)}`,
+              })).concat([
+                { type: 'spacer' },
+                { type: 'text', content: '[dim]usage:[/dim] effects [green]<name>[/green] [green]on[/green]|[green]off[/green]|[green]0..1[/green]' },
+              ]),
+            },
+          ],
+        };
+      }
+      if (!EFFECT_NAMES.includes(name)) {
+        return `[red]unknown effect:[/red] ${name} [dim]— try[/dim] ${EFFECT_NAMES.map((n) => `[green]${n}[/green]`).join(', ')}`;
+      }
+      const num = Number(value);
+      let level;
+      if (value === 'on') level = true;
+      else if (value === 'off') level = false;
+      else if (!Number.isNaN(num) && value !== undefined) level = Math.max(0, Math.min(1, num));
+      else return `[red]usage:[/red] effects ${name} [green]on[/green]|[green]off[/green]|[green]0..1[/green]`;
+      themeState.effects[name] = level;
+      applyThemeState(term);
+      return `${name} ${fmtEffect(name)}`;
     },
   },
 });

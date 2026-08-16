@@ -96,6 +96,7 @@ const CANNED = {
           { type: 'text', content: '[brwhite][b]news[/b][/brwhite] [dim]<n>[/dim]      read the wire, page by page' },
           { type: 'text', content: '[brwhite][b]mode[/b][/brwhite] [dim]<m>[/dim]      display mode: [green]scroll[/green] or [green]page[/green]' },
           { type: 'text', content: '[brwhite][b]theme[/b][/brwhite] [dim]<t>[/dim]     phosphor: [green]amber[/green], [green]green[/green], [green]white[/green] or [green]ice[/green]' },
+          { type: 'text', content: '[brwhite][b]effects[/b][/brwhite] [dim]…[/dim]    CRT effects, e.g. [green]effects scanlines off[/green]' },
           { type: 'text', content: '[brwhite][b]clear[/b][/brwhite]         wipe the screen' },
           { type: 'spacer' },
           { type: 'text', content: '[dim]tip: words like[/dim] [link=about]about[/link] [dim]are links — click or tab to them.[/dim]' },
