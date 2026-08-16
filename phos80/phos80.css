@@ -46,7 +46,7 @@
 }
 
 .p80-crt {
-  height: 100%;
+  height: 100dvh; /* viewport mode; override from host CSS to embed at another size */
   padding: 20px 16px 12px;
   display: flex;
   justify-content: center;
@@ -54,6 +54,25 @@
   background: radial-gradient(ellipse 120% 90% at 50% 40%, var(--bg) 0%, var(--bg-deep) 100%);
   color: var(--amber);
   font: 16px/1.3 var(--font);
+}
+
+/* Document-scrolling mode (settings.scrolling: 'document', the default, in
+   scroll mode): the page grows with content and the BROWSER scrolls; the
+   prompt flows after the last output like a real TTY. */
+.p80-flow .p80-crt {
+  height: auto;
+  min-height: 100dvh;
+  overflow: visible;
+}
+
+.p80-flow .p80-screen {
+  flex: none;
+  overflow: visible;
+}
+
+.p80-flow .p80-overlay,
+.p80-flow .p80-colsbadge {
+  position: fixed; /* effects & badge track the viewport, not the grown page */
 }
 
 .p80-term {

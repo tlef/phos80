@@ -14,6 +14,12 @@ export interface TerminalSettings {
   maxScrollback?: number;
   /** Default 'scroll'. */
   mode?: 'scroll' | 'page';
+  /**
+   * 'document' (default): the page grows and the browser scrolls, prompt
+   * flows after the output. 'viewport': fixed screen with internal scroll.
+   * Page mode always uses the fixed viewport.
+   */
+  scrolling?: 'document' | 'viewport';
   /** Charset for frames/rules. Default 'unicode'. */
   borderSet?: 'unicode' | 'ascii';
   /** Focus the prompt on load / after commands (fine-pointer only). Default true. */

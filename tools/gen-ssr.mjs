@@ -29,9 +29,7 @@ const page = `<!DOCTYPE html>
   <link rel="stylesheet" href="../phos80/phos80.css">
   <style>
     /* Host-page concerns only — the component styles itself. */
-    html, body { height: 100%; }
     body { margin: 0; background: #050302; }
-    #terminal { height: 100dvh; }
   </style>
 </head>
 <body>

@@ -20,6 +20,7 @@ const DEFAULT_SETTINGS = {
   typeCps: 1000, // typewriter reveal speed, characters per second; 0 = instant
   maxScrollback: 1000,
   mode: 'scroll', // 'scroll' | 'page'
+  scrolling: 'document', // 'document' (page grows, browser scrolls) | 'viewport' (fixed screen, inner scroll)
   borderSet: 'unicode', // 'unicode' | 'ascii' — charset for frames/rules
   autoFocus: true, // focus the prompt on load / after commands (fine-pointer devices only)
   focusOnClick: true, // clicking empty screen space focuses the prompt
@@ -205,6 +206,19 @@ export function createTerminal({
 
   // --- Measurement / reflow -----------------------------------------------
 
+  // Document-flow scrolling applies in scroll mode only; BBS page mode always
+  // uses the fixed viewport (a "screen" that gets replaced, sticky header).
+  const isFlow = () => cfg.scrolling === 'document' && state.mode === 'scroll';
+
+  function syncFlow() {
+    const flow = isFlow();
+    mount.classList.toggle('p80-flow', flow);
+    if (flow) {
+      screen.style.flex = '';
+      screen.style.height = '';
+    }
+  }
+
   function remeasure() {
     const { charW, lineH } = measureChar(term);
     const cs = getComputedStyle(crt);
@@ -230,17 +244,20 @@ export function createTerminal({
     // height (which varies with cols) is subtracted from the screen's share.
     renderHeader();
 
-    // Snap the screen to a whole number of ROWS too, so a scrolled view never
-    // shows a half-cut line at the top (real terminals do exactly this).
-    const availH =
-      crt.clientHeight -
-      parseFloat(cs.paddingTop) -
-      parseFloat(cs.paddingBottom) -
-      headerEl.offsetHeight -
-      form.offsetHeight;
-    const rows = Math.max(4, Math.floor(availH / lineH));
-    screen.style.flex = '0 0 auto';
-    screen.style.height = `${(rows * lineH).toFixed(2)}px`;
+    // Viewport mode: snap the screen to a whole number of ROWS too, so a
+    // scrolled view never shows a half-cut line at the top (real terminals do
+    // exactly this). Document mode has no inner scroll — the page just grows.
+    if (!isFlow()) {
+      const availH =
+        crt.clientHeight -
+        parseFloat(cs.paddingTop) -
+        parseFloat(cs.paddingBottom) -
+        headerEl.offsetHeight -
+        form.offsetHeight;
+      const rows = Math.max(4, Math.floor(availH / lineH));
+      screen.style.flex = '0 0 auto';
+      screen.style.height = `${(rows * lineH).toFixed(2)}px`;
+    }
 
     if (badge.isConnected) badge.textContent = `${cols} COLS`;
     return changed;
@@ -278,10 +295,17 @@ export function createTerminal({
           ? blockHTML(state.page)
           : ''
         : state.scrollback.map(entryHTML).join('');
-    scrollBottom();
+    // Document mode: don't yank the page on boot/resize re-renders — the
+    // reader may be partway up the scrollback.
+    if (!isFlow()) scrollBottom();
   }
 
   function scrollBottom() {
+    if (isFlow()) {
+      // The browser owns the scroll; keep the prompt in view with minimal movement.
+      form.scrollIntoView({ block: 'nearest' });
+      return;
+    }
     screen.scrollTop = screen.scrollHeight;
   }
 
@@ -337,6 +361,7 @@ export function createTerminal({
     }
     state.mode = m;
     if (m === 'page') state.page = null;
+    syncFlow(); // page mode always uses the fixed viewport
     remeasure(); // header appears/disappears with the mode → re-snap rows
     renderAll(); // rebuild the screen from the new mode's retained models
     return noticeDoc(m === 'page' ? chr.notices.modePage : chr.notices.modeScroll);
@@ -458,6 +483,7 @@ export function createTerminal({
     if (signal.aborted) return;
 
     // Take over from any static prerendered markup: same doc, real width.
+    syncFlow();
     remeasure();
     if (initialDoc) {
       if (state.mode === 'page') state.page = initialDoc;
@@ -494,6 +520,7 @@ export function createTerminal({
      */
     configure: (partial = {}) => {
       Object.assign(cfg, partial);
+      syncFlow();
       if (remeasure()) renderAll();
     },
     get settings() {

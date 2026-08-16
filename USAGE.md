@@ -26,7 +26,7 @@ phos80 contains **no content**. Every screen the visitor sees comes from your si
 </script>
 ```
 
-Give the mount element a height (`#terminal { height: 100dvh }` for full screen). If `mount` is empty, phos80 builds its own skeleton; if it contains a server-prerendered skeleton (§5), phos80 adopts it in place.
+No host CSS is required: by default the terminal fills the viewport and grows with its content (the browser scrolls the page, like a normal website). For a fixed app-style screen with internal scrollback, set `settings: { scrolling: 'viewport' }` — and size it by overriding `.p80-crt { height: … }` if you're embedding it smaller than the viewport. If `mount` is empty, phos80 builds its own skeleton; if it contains a server-prerendered skeleton (§5), phos80 adopts it in place.
 
 The `phos80/client` specifiers come from installing via npm (`npm i github:tlef/phos80`), which also brings TypeScript declarations — including `phos80/protocol` types (`Doc`, `Widget`, `Envelope`) for compile-time checking of API handlers. Without npm, use relative paths (`./phos80/client.js`); the framework is plain ES modules.
 
@@ -58,6 +58,8 @@ const term = createTerminal({
     typeCps: 1000,                     // typewriter speed (chars/sec); 0 = instant
     maxScrollback: 1000,
     mode: 'scroll',                    // 'scroll' | 'page' (BBS-style full screens)
+    scrolling: 'document',             // page grows & browser scrolls; 'viewport' = fixed
+                                       //   screen w/ inner scroll (page mode always fixed)
     borderSet: 'unicode',              // 'ascii' draws frames with +--| instead of box glyphs
     autoFocus: true,                   // focus prompt on load/after commands (fine-pointer only)
     focusOnClick: true,                // clicking empty screen space focuses the prompt
