@@ -466,6 +466,25 @@ export function createTerminal({
     { signal }
   );
 
+  // Images without a declared height: snap to whole rows once loaded so the
+  // grid stays row-aligned ('load' doesn't bubble, but it does capture).
+  mount.addEventListener(
+    'load',
+    (e) => {
+      const img = e.target;
+      if (!(img instanceof HTMLImageElement) || !img.classList.contains('p80-img-auto')) return;
+      const box = img.parentElement;
+      const line = img.closest('.p80-line');
+      if (!box || !line) return;
+      const lineH = parseFloat(getComputedStyle(line).lineHeight) || 1;
+      const rows = Math.max(1, Math.round(img.getBoundingClientRect().height / lineH));
+      img.classList.remove('p80-img-auto');
+      line.style.height = `${rows}lh`; // box + img fill the row via height:100%
+      scrollBottom();
+    },
+    { capture: true, signal }
+  );
+
   // --- Boot / hydration -----------------------------------------------------
 
   const ro = new ResizeObserver(

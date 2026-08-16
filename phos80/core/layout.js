@@ -131,6 +131,9 @@ function layoutWidget(w, cols, out, opts) {
     case 'frame':
       layoutFrame(w, cols, out, opts);
       break;
+    case 'image':
+      layoutImage(w, cols, out);
+      break;
     case 'columns':
       layoutColumns(w, cols, out, opts);
       break;
@@ -166,6 +169,32 @@ function layoutFrame(w, cols, out, opts) {
   }
 
   out.push([seg(b.bl + b.h.repeat(Math.max(0, cols - 2)) + b.br, bs)]);
+}
+
+/**
+ * Inline image, grid-snapped: occupies `width` character cells (and `height`
+ * rows, if given — otherwise the client snaps to whole rows once the image
+ * loads). The segment's text is real padding spaces, so the width invariant
+ * and alignment logic apply unchanged; the renderer swaps it for an <img>.
+ *   { type: 'image', src, alt?, width?, height?, align?,
+ *     treatment?: 'phosphor'|'pixel'|'plain', link? }
+ */
+function layoutImage(w, cols, out) {
+  if (!w.src) return;
+  const cells = Math.max(4, Math.min(cols, w.width ?? Math.min(40, cols)));
+  const rows = Number.isFinite(w.height) && w.height > 0 ? Math.round(w.height) : null;
+  const imageSeg = {
+    text: ' '.repeat(cells),
+    style: {},
+    image: {
+      src: String(w.src),
+      alt: w.alt ?? '',
+      rows,
+      treatment: w.treatment,
+      link: w.link,
+    },
+  };
+  out.push(padSegs([imageSeg], cols, w.align));
 }
 
 /**

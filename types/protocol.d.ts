@@ -46,6 +46,23 @@ export interface ButtonsWidget {
   align?: Align;
 }
 
+export interface ImageWidget {
+  type: 'image';
+  /** http(s) URL or scheme-less relative path. */
+  src: string;
+  /** Required for accessibility/SEO. */
+  alt?: string;
+  /** Width in character cells; default min(40, cols), clamped to viewport. */
+  width?: number;
+  /** Height in rows; omit to auto-snap to whole rows on load. */
+  height?: number;
+  align?: Align;
+  /** 'phosphor' (default): monochrome, theme-tinted. */
+  treatment?: 'phosphor' | 'pixel' | 'plain';
+  /** Wraps the image; URL or command (same rules as [link=…]). */
+  link?: string;
+}
+
 export interface RuleWidget {
   type: 'rule';
   char?: string;
@@ -62,6 +79,7 @@ export type Widget =
   | FrameWidget
   | ColumnsWidget
   | ButtonsWidget
+  | ImageWidget
   | RuleWidget
   | SpacerWidget;
 

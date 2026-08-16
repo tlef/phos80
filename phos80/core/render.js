@@ -36,8 +36,44 @@ function safeHref(href) {
   return null;
 }
 
+/** Images may come from http(s) or scheme-less relative paths only. */
+function safeSrc(src) {
+  const h = String(src);
+  if (/^https?:\/\//i.test(h)) return h;
+  if (!h.includes(':')) return h;
+  return null;
+}
+
+const TREATMENTS = new Set(['phosphor', 'pixel', 'plain']);
+
+function renderImageSeg(s, opts) {
+  const { src, alt, rows, treatment, link } = s.image;
+  const safe = safeSrc(src);
+  if (!safe) return `<span>${escapeHTML(s.text)}</span>`; // bad src → stays blank cells
+  const cells = s.text.length;
+  const t = TREATMENTS.has(treatment) ? treatment : 'phosphor';
+  // Height lives on the row (.p80-line) only — `lh` inside the box would
+  // resolve against its own line-height:0. The box/img fill the row via %.
+  const box =
+    `<span class="p80-imgbox p80-t-${t}" style="width:${cells}ch">` +
+    `<img class="p80-img${rows ? '' : ' p80-img-auto'}" src="${escapeHTML(safe)}" alt="${escapeHTML(alt)}" loading="lazy"></span>`;
+  if (link) {
+    const sh = safeHref(link);
+    if (sh) {
+      const extra =
+        sh.external && (opts?.externalLinks ?? '_blank') === '_blank'
+          ? ' target="_blank" rel="noopener"'
+          : '';
+      return `<a class="p80-imglink" href="${escapeHTML(sh.href)}"${extra}>${box}</a>`;
+    }
+    return `<a class="p80-imglink" href="#" data-cmd="${escapeHTML(link)}">${box}</a>`;
+  }
+  return box;
+}
+
 function renderSeg(s, opts) {
   if (!s.text) return '';
+  if (s.image) return renderImageSeg(s, opts);
   const text = escapeHTML(s.text);
   const cls = classesFor(s.style);
 
@@ -65,6 +101,14 @@ function renderSeg(s, opts) {
  */
 export function renderLines(lines, opts) {
   return lines
-    .map((line) => `<div class="p80-line">${line.map((s) => renderSeg(s, opts)).join('')}</div>`)
+    .map((line) => {
+      // A line holding an image is as tall as the image (in whole rows);
+      // height:auto until the client snaps unmeasured images on load.
+      const img = line.find((s) => s.image);
+      const style = img
+        ? ` style="height:${img.image.rows ? `${img.image.rows}lh` : 'auto'}"`
+        : '';
+      return `<div class="p80-line"${style}>${line.map((s) => renderSeg(s, opts)).join('')}</div>`;
+    })
     .join('\n');
 }

@@ -172,6 +172,50 @@
   text-shadow: none;
 }
 
+/* ------------------------------------------------------------------ */
+/* Inline images (image widget) — grid-snapped, CRT-treated           */
+/* ------------------------------------------------------------------ */
+.p80-imgbox {
+  display: inline-block;
+  vertical-align: top;
+  overflow: hidden;
+  line-height: 0;
+  height: 100%; /* fills the row's height (set in lh on .p80-line) */
+}
+
+.p80-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* absorbs the sub-row crop from row snapping */
+}
+
+.p80-img-auto {
+  height: auto; /* until the client snaps it to whole rows on load */
+}
+
+/* 'phosphor': luminosity blend over the theme foreground → the image reads
+   as drawn on the tube, and re-tints when the theme changes. */
+.p80-t-phosphor {
+  background: var(--amber);
+  isolation: isolate;
+}
+
+.p80-t-phosphor .p80-img {
+  mix-blend-mode: luminosity;
+  filter: contrast(1.05) brightness(0.95);
+}
+
+.p80-t-pixel .p80-img {
+  image-rendering: pixelated;
+}
+
+.p80-imglink {
+  line-height: 0;
+  display: inline-block;
+  vertical-align: top;
+}
+
 /* Buttons & command-links: real focusable elements drawn as characters */
 .p80-btn {
   font: inherit;

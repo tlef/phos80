@@ -32,7 +32,7 @@ The `phos80/client` specifiers come from installing via npm (`npm i github:tlef/
 
 ## 2. The contract in one paragraph
 
-Every command the visitor types (or button they click) is passed to your `transport`, which must resolve to `{ ok, doc, header? }`. The `doc` is a widget tree — `text` (with alignment), `frame`, `columns` (side-by-side panels that stack when narrow), `buttons`, `rule`, `spacer` — and text content uses BBCode-style tags for color/bold/links. "This frame on the left, that one on the right" is:
+Every command the visitor types (or button they click) is passed to your `transport`, which must resolve to `{ ok, doc, header? }`. The `doc` is a widget tree — `text` (with alignment), `frame`, `columns` (side-by-side panels that stack when narrow), `buttons`, `image` (inline, grid-snapped, CRT-treated), `rule`, `spacer` — and text content uses BBCode-style tags for color/bold/links. "This frame on the left, that one on the right" is:
 
 ```json
 { "type": "columns", "widths": [1, 1], "min": 30, "children": [

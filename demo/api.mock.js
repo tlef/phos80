@@ -98,6 +98,7 @@ const CANNED = {
           { type: 'text', content: '[brwhite][b]theme[/b][/brwhite] [dim]<t>[/dim]     phosphor: [green]amber[/green], [green]green[/green], [green]white[/green] or [green]ice[/green]' },
           { type: 'text', content: '[brwhite][b]effects[/b][/brwhite] [dim]…[/dim]    CRT effects, e.g. [green]effects scanlines off[/green]' },
           { type: 'text', content: '[brwhite][b]speed[/b][/brwhite] [dim]<n>[/dim]     typewriter cps, or [green]off[/green] / [green]default[/green]' },
+          { type: 'text', content: '[brwhite][b]poster[/b][/brwhite] [dim]<t>[/dim]    inline image; treatments [green]phosphor[/green]|[green]pixel[/green]|[green]plain[/green]' },
           { type: 'text', content: '[brwhite][b]clear[/b][/brwhite]         wipe the screen' },
           { type: 'spacer' },
           { type: 'text', content: '[dim]tip: words like[/dim] [link=about]about[/link] [dim]are links — click or tab to them.[/dim]' },
@@ -120,6 +121,47 @@ const CANNED = {
       { type: 'buttons', align: 'center', items: [{ label: 'HELP' }, { label: 'NEWS', command: 'news 1' }] },
     ],
   }),
+
+  poster: (args) => {
+    const treatment = ['phosphor', 'pixel', 'plain'].includes(args[0]) ? args[0] : 'phosphor';
+    return {
+      widgets: [
+        {
+          type: 'frame',
+          title: 'TRAVEL BUREAU',
+          children: [
+            { type: 'text', align: 'center', content: '[bryellow][b]VISIT BEAUTIFUL YAVIN 4[/b][/bryellow]' },
+            { type: 'text', align: 'center', content: '[dim]jungle moon of the gas giant Yavin[/dim]' },
+            { type: 'spacer' },
+            {
+              type: 'image',
+              src: 'poster.svg',
+              alt: 'Retro travel poster: a jungle moon beneath an orange gas giant',
+              width: 36,
+              align: 'center',
+              treatment,
+              link: 'poster.svg',
+            },
+            { type: 'spacer' },
+            {
+              type: 'text',
+              align: 'center',
+              content: `[dim]treatment:[/dim] [green]${treatment}[/green] [dim]· click the poster for full size[/dim]`,
+            },
+          ],
+        },
+        {
+          type: 'buttons',
+          align: 'center',
+          items: [
+            { label: 'PHOSPHOR', command: 'poster phosphor' },
+            { label: 'PIXEL', command: 'poster pixel' },
+            { label: 'PLAIN', command: 'poster plain' },
+          ],
+        },
+      ],
+    };
+  },
 
   news: (args) => {
     const n = Math.min(NEWS.length, Math.max(1, parseInt(args[0], 10) || 1));

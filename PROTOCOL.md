@@ -47,6 +47,14 @@ Side-by-side children — the terminal's flexbox. Each child is one column, laid
 ```
 Rendered as `[ NEXT ]`, clickable/focusable; clicking dispatches `command` (default: lowercased label). Rows pack greedily and wrap.
 
+### image
+```jsonc
+{ "type": "image", "src": "/img/x.jpg", "alt": "description",
+  "width": 40, "height": 20, "align": "center",
+  "treatment": "phosphor", "link": "/img/x-full.jpg" }
+```
+Inline image, snapped to the character grid: `width` in cells (default `min(40, cols)`, clamped to the viewport), `height` in rows — omit it and the client snaps to whole rows once the image loads (`object-fit: cover` absorbs the sub-row crop). `treatment`: `phosphor` (default — monochrome, tinted to the theme foreground, like it's drawn on the tube), `pixel` (adds chunky pixelation), `plain` (untouched). `link` wraps the image (URL or command, same rules as `[link=…]`). `src` may be http(s) or a scheme-less relative path. `alt` is required for accessibility and SEO. Images render through SSR as normal `<img>` tags; they are the one widget that isn't literal characters, so they don't copy as text.
+
 ### rule
 ```jsonc
 { "type": "rule", "char": "─", "color": "cyan" }
