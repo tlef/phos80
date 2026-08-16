@@ -8,7 +8,7 @@ export interface TerminalSettings {
   maxCols?: number;
   /** Default 20. */
   minCols?: number;
-  /** Typewriter reveal speed, chars/sec; 0 = instant. Default 10000. */
+  /** Typewriter reveal speed, chars/sec; 0 = instant. Default 1000. */
   typeCps?: number;
   /** Default 1000. */
   maxScrollback?: number;

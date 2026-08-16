@@ -17,7 +17,7 @@ import { themeVars } from './themes.js';
 const DEFAULT_SETTINGS = {
   maxCols: 80, // viewport width cap, in character cells (terminal stays centered)
   minCols: 20,
-  typeCps: 10000, // typewriter reveal speed, characters per second; 0 = instant
+  typeCps: 1000, // typewriter reveal speed, characters per second; 0 = instant
   maxScrollback: 1000,
   mode: 'scroll', // 'scroll' | 'page'
   borderSet: 'unicode', // 'unicode' | 'ascii' — charset for frames/rules

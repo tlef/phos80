@@ -41,7 +41,6 @@ createTerminal({
 
   settings: {
     maxCols: 80,
-    typeCps: 10000,
     maxScrollback: 1000,
   },
 
@@ -109,7 +108,7 @@ createTerminal({
       }
       let cps;
       if (v === 'off' || v === 'instant') cps = 0;
-      else if (v === 'default') cps = 10000;
+      else if (v === 'default') cps = 1000;
       else if (!Number.isNaN(Number(v))) cps = Math.max(0, Number(v));
       else return '[red]usage:[/red] speed [green]<cps>[/green]|[green]off[/green]|[green]default[/green]';
       term.configure({ typeCps: cps });

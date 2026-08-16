@@ -55,7 +55,7 @@ const term = createTerminal({
   settings: {
     maxCols: 80,                       // grid clamp, in character cells
     minCols: 20,
-    typeCps: 10000,                    // typewriter speed (chars/sec); 0 = instant
+    typeCps: 1000,                     // typewriter speed (chars/sec); 0 = instant
     maxScrollback: 1000,
     mode: 'scroll',                    // 'scroll' | 'page' (BBS-style full screens)
     borderSet: 'unicode',              // 'ascii' draws frames with +--| instead of box glyphs
