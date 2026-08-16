@@ -8,7 +8,7 @@
 export const WELCOME_DOC = {
   widgets: [
     { type: 'spacer' },
-    { type: 'text', align: 'center', content: '[bryellow][b]░▒▓█  P R O J E C T   8 0 s  █▓▒░[/b][/bryellow]' },
+    { type: 'text', align: 'center', content: '[bryellow][b]░▒▓█  P H O S 8 0  █▓▒░[/b][/bryellow]' },
     { type: 'text', align: 'center', content: '[dim]AMBER PHOSPHOR TERMINAL · EST. 2026[/dim]' },
     { type: 'spacer' },
     {
@@ -58,7 +58,7 @@ export const HEADER_DOC = {
       type: 'columns',
       min: 12,
       children: [
-        { type: 'text', content: '[bryellow][b]▓▒░ PROJECT 80s[/b][/bryellow]' },
+        { type: 'text', content: '[bryellow][b]▓▒░ PHOS80[/b][/bryellow]' },
         { type: 'text', align: 'right', content: '[dim]sys[/dim] [green]OK[/green] · [cyan]ttyS0[/cyan]' },
       ],
     },

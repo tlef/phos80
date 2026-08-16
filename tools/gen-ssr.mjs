@@ -23,7 +23,7 @@ const page = `<!DOCTYPE html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
-  <title>PROJECT 80s — amber phosphor terminal</title>
+  <title>phos80 — amber phosphor terminal</title>
   <meta name="description" content="A modern website that thinks it is 1983: an amber phosphor terminal interface with character-drawn frames, responsive reflow, and a command line.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%230d0805'/%3E%3Ctext x='2' y='12' font-family='monospace' font-size='11' fill='%23ffb000'%3E%26gt;_%3C/text%3E%3C/svg%3E">
   <link rel="stylesheet" href="../phos80/phos80.css">

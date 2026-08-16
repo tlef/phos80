@@ -45,7 +45,7 @@ const ABOUT_PANEL = {
   border: 'double',
   title: 'ABOUT',
   children: [
-    { type: 'text', align: 'center', content: '[bryellow][b]PROJECT 80s[/b][/bryellow]' },
+    { type: 'text', align: 'center', content: '[bryellow][b]PHOS80[/b][/bryellow]' },
     { type: 'text', align: 'center', content: '[dim]a terminal-shaped website[/dim]' },
     { type: 'spacer' },
     {
