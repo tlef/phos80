@@ -23,6 +23,8 @@ Every transport response resolves to:
 
 A doc is `{ "widgets": Widget[] }`. Widgets stack vertically; layout is computed at the client's current column count, so the API never reasons about pixels or viewport sizes.
 
+**Every widget** additionally accepts `margin` — space reserved on the sides, in character cells: `"margin": 4` (both sides) or `"margin": [8, 2]` (left, right). The widget is laid out at the reduced width (wrapping, centering, frames etc. all respect it), and margins shrink proportionally at narrow viewports so content keeps at least 8 cells. Margins nest: a frame with a margin can contain children with margins.
+
 ### text
 ```jsonc
 { "type": "text", "content": "BBCode string", "align": "left" }

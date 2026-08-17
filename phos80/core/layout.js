@@ -107,7 +107,41 @@ export function layoutDoc(doc, cols, opts = {}) {
   return lines;
 }
 
+/** margin: number (both sides) or [left, right], in character cells. */
+function normMargin(margin, cols) {
+  let left = 0;
+  let right = 0;
+  if (typeof margin === 'number') left = right = Math.max(0, Math.floor(margin));
+  else if (Array.isArray(margin)) {
+    left = Math.max(0, Math.floor(margin[0] ?? 0));
+    right = Math.max(0, Math.floor(margin[1] ?? 0));
+  }
+  // Collapse gracefully at narrow widths: keep at least 8 cells of content,
+  // shrinking both margins proportionally.
+  const maxTotal = Math.max(0, cols - 8);
+  const total = left + right;
+  if (total > maxTotal) {
+    const scale = total ? maxTotal / total : 0;
+    left = Math.floor(left * scale);
+    right = Math.floor(right * scale);
+  }
+  return [left, right];
+}
+
 function layoutWidget(w, cols, out, opts) {
+  // Universal margin support: lay the widget out at the reduced width, then
+  // pad each line with literal space cells. Works for every widget type.
+  const [ml, mr] = normMargin(w.margin, cols);
+  if (ml || mr) {
+    const inner = cols - ml - mr;
+    const tmp = [];
+    layoutWidget({ ...w, margin: 0 }, inner, tmp, opts);
+    for (const line of tmp) {
+      out.push([...(ml ? [seg(spaces(ml))] : []), ...line, ...(mr ? [seg(spaces(mr))] : [])]);
+    }
+    return;
+  }
+
   switch (w.type) {
     case 'text': {
       for (const para of String(w.content ?? '').split('\n')) {

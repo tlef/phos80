@@ -8,14 +8,21 @@ export type ColorName =
 
 export type Align = 'left' | 'center' | 'right';
 
-export interface TextWidget {
+/** Side margins in character cells: n (both) or [left, right]. All widgets. */
+export type Margin = number | [number, number];
+
+interface WidgetBase {
+  margin?: Margin;
+}
+
+export interface TextWidget extends WidgetBase {
   type: 'text';
   /** BBCode-style inline markup; \n splits paragraphs; long lines wrap. */
   content: string;
   align?: Align;
 }
 
-export interface FrameWidget {
+export interface FrameWidget extends WidgetBase {
   type: 'frame';
   title?: string;
   border?: 'single' | 'double';
@@ -23,7 +30,7 @@ export interface FrameWidget {
   children?: Widget[];
 }
 
-export interface ColumnsWidget {
+export interface ColumnsWidget extends WidgetBase {
   type: 'columns';
   /** One child per column; columns stack below `min` width. */
   children: Widget[];
@@ -40,13 +47,13 @@ export interface ButtonItem {
   color?: ColorName;
 }
 
-export interface ButtonsWidget {
+export interface ButtonsWidget extends WidgetBase {
   type: 'buttons';
   items: ButtonItem[];
   align?: Align;
 }
 
-export interface ImageWidget {
+export interface ImageWidget extends WidgetBase {
   type: 'image';
   /** http(s) URL or scheme-less relative path. */
   src: string;
@@ -63,13 +70,13 @@ export interface ImageWidget {
   link?: string;
 }
 
-export interface RuleWidget {
+export interface RuleWidget extends WidgetBase {
   type: 'rule';
   char?: string;
   color?: ColorName;
 }
 
-export interface SpacerWidget {
+export interface SpacerWidget extends WidgetBase {
   type: 'spacer';
   lines?: number;
 }
