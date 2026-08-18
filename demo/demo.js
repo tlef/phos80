@@ -85,7 +85,7 @@ createTerminal({
                 content: `[brwhite][b]${n}[/b][/brwhite]${' '.repeat(Math.max(1, 12 - n.length))}${fmtEffect(n)}`,
               })).concat([
                 { type: 'spacer' },
-                { type: 'text', content: '[dim]usage:[/dim] effects [green]<name>[/green] [green]on[/green]|[green]off[/green]|[green]0..1[/green]' },
+                { type: 'text', content: '[dim]usage:[/dim] effects [green]<name>[/green] [green]on[/green]|[green]off[/green]|[green]0..2[/green] [dim](1 = default, 2 = double)[/dim]' },
               ]),
             },
           ],
@@ -99,8 +99,9 @@ createTerminal({
       let level;
       if (value === 'on') level = true;
       else if (value === 'off') level = false;
-      else if (!Number.isNaN(num) && value !== undefined) level = Math.max(0, Math.min(1, num));
-      else return `[red]usage:[/red] effects ${key} [green]on[/green]|[green]off[/green]|[green]0..1[/green]`;
+      // 1 = the effect's default strength; above 1 amplifies it.
+      else if (!Number.isNaN(num) && value !== undefined) level = Math.max(0, Math.min(2, num));
+      else return `[red]usage:[/red] effects ${key} [green]on[/green]|[green]off[/green]|[green]0..2[/green]`;
       themeState.effects[key] = level;
       applyThemeState(term);
       return `${key} ${fmtEffect(key)}`;

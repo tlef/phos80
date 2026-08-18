@@ -115,11 +115,13 @@ theme: {
   preset: 'green',
   colors: { bg: '#020805', cyan: '#8ff' },     // any palette key, or 'font'
   effects: {
-    scanlines: 0.5,    // false | true | 0..1  ← the interlace lines
-    glow: true,        // false | true | 0..1
-    flicker: false,    // false disables the overlay flicker (whole-screen)
-    textFlicker: 0.7,  // phosphor flicker on the TEXT; opt-in, 0..1 amplitude
-    vignette: true,    // false | true | 0..1
+    // Intensities are multipliers of each effect's built-in strength:
+    // 1 (or true) = default, 0 (or false) = off, above 1 amplifies.
+    scanlines: 0.5,    // the interlace lines
+    glow: 0.4,         // phosphor bloom — scales the core AND the halo
+    vignette: true,    // corner darkening
+    flicker: false,    // overlay flicker (whole-screen brightness); on/off only
+    textFlicker: 0.7,  // phosphor flicker on the TEXT itself; opt-in
   },
 }
 ```

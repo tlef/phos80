@@ -84,10 +84,11 @@
   min-width: 0;
   position: relative; /* anchors the measurement probe */
   /* Phosphor glow — currentColor makes every palette color glow correctly.
-     Intensity via --p80-glow (0..1); the p80-fx-noglow class kills it. */
+     Intensity via --p80-glow: 1 = default, 0 = none, >1 amplifies. BOTH the
+     tight core and the outer halo scale, so mid values really are dimmer. */
   text-shadow:
-    0 0 2px currentColor,
-    0 0 8px color-mix(in srgb, currentColor calc(28% * var(--p80-glow, 1)), transparent);
+    0 0 2px color-mix(in srgb, currentColor min(100%, calc(100% * var(--p80-glow, 1))), transparent),
+    0 0 8px color-mix(in srgb, currentColor min(100%, calc(28% * var(--p80-glow, 1))), transparent);
 }
 
 .p80-fx-noglow .p80-term {

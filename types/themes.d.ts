@@ -11,7 +11,10 @@ export type PaletteKey =
 export type Palette = Record<PaletteKey, string>;
 
 export interface ThemeEffects {
-  /** false = off, true = full, number = 0..1 intensity. */
+  /**
+   * Intensity multiplier of the effect's built-in strength: false/0 = off,
+   * true/1 = default, values above 1 amplify.
+   */
   scanlines?: boolean | number;
   vignette?: boolean | number;
   glow?: boolean | number;
