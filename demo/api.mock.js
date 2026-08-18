@@ -128,7 +128,10 @@ const CANNED = {
       widgets: [
         {
           type: 'frame',
-          title: 'TRAVEL BUREAU',
+          // Border colour and title colour are independent: `color` tints the
+          // border, inline markup in `title` styles just the title.
+          color: 'cyan',
+          title: '[bryellow]TRAVEL BUREAU[/bryellow]',
           children: [
             { type: 'text', align: 'center', content: '[bryellow][b]VISIT BEAUTIFUL YAVIN 4[/b][/bryellow]' },
             { type: 'text', align: 'center', content: '[dim]jungle moon of the gas giant Yavin[/dim]' },
@@ -188,7 +191,7 @@ const CANNED = {
       widgets: [
         {
           type: 'frame',
-          title: `NEWS ${n}/${NEWS.length}`,
+          title: `[brcyan]NEWS ${n}/${NEWS.length}[/brcyan]`,
           children: [
             { type: 'text', content: `[yellow][b]${a.headline}[/b][/yellow]` },
             { type: 'text', align: 'right', content: `[dim]${a.byline}[/dim]` },

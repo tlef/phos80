@@ -185,14 +185,20 @@ function layoutFrame(w, cols, out, opts) {
   const bs = w.color ? { color: w.color } : {};
   const inner = Math.max(1, cols - 4); // "│ content │"
 
-  // Top border, optionally with an embedded bold title: ┌─ TITLE ────┐
-  let title = w.title ? ` ${w.title} ` : '';
+  // Top border, optionally with an embedded title: ┌─ TITLE ────┐
+  // Titles accept the same inline markup as text content; the frame's colour
+  // and bold are the defaults each run inherits, so [cyan]…[/cyan] in a title
+  // recolours just the title and leaves the border alone.
   const maxTitle = Math.max(0, cols - 4);
-  if (title.length > maxTitle) title = title.slice(0, maxTitle);
-  const fill = cols - 2 - title.length - 1; // tl + h … title … fills + tr
-  const top = [seg(b.tl + b.h, bs)];
-  if (title) top.push(seg(title, { ...bs, bold: true }));
-  top.push(seg(b.h.repeat(Math.max(0, fill)) + b.tr, bs));
+  let titleSegs = [];
+  if (w.title) {
+    const base = { ...bs, bold: true };
+    const runs = parse(String(w.title)).map((s) => ({ ...s, style: { ...base, ...s.style } }));
+    titleSegs = [seg(' ', bs), ...runs, seg(' ', bs)];
+    if (visLen(titleSegs) > maxTitle) titleSegs = sliceSegs(titleSegs, 0, maxTitle);
+  }
+  const fill = cols - 2 - visLen(titleSegs) - 1; // tl + h … title … fills + tr
+  const top = [seg(b.tl + b.h, bs), ...titleSegs, seg(b.h.repeat(Math.max(0, fill)) + b.tr, bs)];
   out.push(padSegs(top, cols));
 
   // Children laid out at the inner width, then wrapped in border columns.

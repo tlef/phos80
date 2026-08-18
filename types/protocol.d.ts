@@ -24,8 +24,10 @@ export interface TextWidget extends WidgetBase {
 
 export interface FrameWidget extends WidgetBase {
   type: 'frame';
+  /** Embedded in the top border, bold; accepts inline markup ([cyan]…[/cyan]). */
   title?: string;
   border?: 'single' | 'double';
+  /** Tints the border; also the title's default colour. */
   color?: ColorName;
   children?: Widget[];
 }
