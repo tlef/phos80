@@ -73,8 +73,15 @@ export interface ImageWidget extends WidgetBase {
   alt?: string;
   /** Width in character cells; default min(40, cols), clamped to viewport. */
   width?: number;
-  /** Height in rows; omit to auto-snap to whole rows on load. */
+  /** Height in rows. Omit to derive it from the image's shape. */
   height?: number;
+  /**
+   * Intrinsic width/height ratio (e.g. 0.667 for a 2:3 poster). Lets layout
+   * reserve the right number of rows before the image loads — the same job
+   * HTML's width/height attributes do. Ignored once the client has measured
+   * the image.
+   */
+  aspect?: number;
   align?: Align;
   /** 'phosphor' (default): monochrome, theme-tinted. */
   treatment?: 'phosphor' | 'pixel' | 'plain';

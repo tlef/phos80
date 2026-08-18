@@ -166,7 +166,7 @@ function layoutWidget(w, cols, out, opts) {
       layoutFrame(w, cols, out, opts);
       break;
     case 'image':
-      layoutImage(w, cols, out);
+      layoutImage(w, cols, out, opts);
       break;
     case 'columns':
       layoutColumns(w, cols, out, opts);
@@ -268,19 +268,40 @@ function layoutRow(w, cols, out) {
   out.push(line);
 }
 
+/** Fallback cell shape (charW / lineH) when the caller can't measure one. */
+const DEFAULT_CELL_RATIO = 0.5;
+
+const lookupSize = (sizes, src) =>
+  sizes instanceof Map ? sizes.get(src) : sizes?.[src];
+
 /**
- * Inline image, grid-snapped: occupies `width` character cells (and `height`
- * rows, if given — otherwise the client snaps to whole rows once the image
- * loads). The segment's text is real padding spaces, so the width invariant
- * and alignment logic apply unchanged; the renderer swaps it for an <img>.
- *   { type: 'image', src, alt?, width?, height?, align?,
+ * How many whole rows an image occupies. Explicit `height` wins; otherwise
+ * derive it from the image's shape — measured intrinsic size if the caller
+ * supplied a size cache, else the `aspect` (width/height) hint, else square.
+ */
+function imageRows(w, cells, opts) {
+  if (Number.isFinite(w.height) && w.height > 0) return Math.max(1, Math.round(w.height));
+  const ratio = opts?.cellRatio > 0 ? opts.cellRatio : DEFAULT_CELL_RATIO;
+  const nat = lookupSize(opts?.imageSizes, String(w.src));
+  let aspect = nat?.w > 0 && nat?.h > 0 ? nat.w / nat.h : null;
+  if (!aspect && Number.isFinite(w.aspect) && w.aspect > 0) aspect = w.aspect;
+  return Math.max(1, Math.round((cells * ratio) / (aspect ?? 1)));
+}
+
+/**
+ * Inline image, grid-snapped. It reserves a real RECTANGLE of cells: `width`
+ * cells wide and N rows tall, every row a line of literal spaces. Because the
+ * rows exist in the model, frames draw borders down both sides of the image,
+ * columns stay row-aligned beside it, and the width invariant is untouched —
+ * the renderer paints one <img> over the reserved area.
+ *   { type: 'image', src, alt?, width?, height?, aspect?, align?,
  *     treatment?: 'phosphor'|'pixel'|'plain', link? }
  */
-function layoutImage(w, cols, out) {
+function layoutImage(w, cols, out, opts) {
   if (!w.src) return;
   const cells = Math.max(4, Math.min(cols, w.width ?? Math.min(40, cols)));
-  const rows = Number.isFinite(w.height) && w.height > 0 ? Math.round(w.height) : null;
-  const imageSeg = {
+  const rows = imageRows(w, cells, opts);
+  const anchor = {
     text: ' '.repeat(cells),
     style: {},
     image: {
@@ -291,7 +312,12 @@ function layoutImage(w, cols, out) {
       link: w.link,
     },
   };
-  out.push(padSegs([imageSeg], cols, w.align));
+  out.push(padSegs([anchor], cols, w.align));
+  // Remaining rows are plain reserved cells, padded identically so the
+  // rectangle stays flush under the anchor row.
+  for (let i = 1; i < rows; i++) {
+    out.push(padSegs([seg(spaces(cells))], cols, w.align));
+  }
 }
 
 /**

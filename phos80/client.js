@@ -200,6 +200,8 @@ export function createTerminal({
     header: chr.header, // header doc shown in page mode (API-replaceable)
     cols: cfg.maxCols,
     charW: 8,
+    lineH: 16,
+    imageSizes: {}, // src → { w, h }; feeds image row counts into layout
     history: loadHistory(),
     hIdx: 0,
     busy: false,
@@ -238,9 +240,10 @@ export function createTerminal({
       parseFloat(cs.paddingRight) -
       gutter;
     const cols = computeCols(avail, charW, cfg.maxCols, cfg.minCols);
-    const changed = cols !== state.cols || charW !== state.charW;
+    const changed = cols !== state.cols || charW !== state.charW || lineH !== state.lineH;
     state.cols = cols;
     state.charW = charW;
+    state.lineH = lineH;
     // Size the column to a whole number of cells (plus the scrollbar gutter)
     // so fractional char widths can't wrap or clip the last column.
     term.style.width = `${(cols * charW + gutter).toFixed(2)}px`;
@@ -270,8 +273,13 @@ export function createTerminal({
 
   // --- Rendering (always from retained models) ----------------------------
 
-  // Read cfg at call time so configure() changes take effect immediately.
-  const layoutOpts = () => ({ borders: cfg.borderSet });
+  // Read cfg/state at call time so configure() changes and newly measured
+  // image sizes take effect on the next render.
+  const layoutOpts = () => ({
+    borders: cfg.borderSet,
+    cellRatio: state.charW / state.lineH,
+    imageSizes: state.imageSizes,
+  });
   const renderOpts = () => ({ externalLinks: cfg.externalLinks });
 
   const blockHTML = (doc) =>
@@ -471,21 +479,25 @@ export function createTerminal({
     { signal }
   );
 
-  // Images without a declared height: snap to whole rows once loaded so the
-  // grid stays row-aligned ('load' doesn't bubble, but it does capture).
+  // Learn each image's intrinsic size, then re-lay-out so its reserved rows
+  // match its true shape. Same pattern as a font load or a resize: the
+  // measurement improves, the pipeline re-runs from the retained models.
+  // ('load' doesn't bubble, but it does capture.)
+  const reflowForImages = debounce(() => renderAll(), 50);
+
   mount.addEventListener(
     'load',
     (e) => {
       const img = e.target;
-      if (!(img instanceof HTMLImageElement) || !img.classList.contains('p80-img-auto')) return;
-      const box = img.parentElement;
-      const line = img.closest('.p80-line');
-      if (!box || !line) return;
-      const lineH = parseFloat(getComputedStyle(line).lineHeight) || 1;
-      const rows = Math.max(1, Math.round(img.getBoundingClientRect().height / lineH));
-      img.classList.remove('p80-img-auto');
-      line.style.height = `${rows}lh`; // box + img fill the row via height:100%
-      scrollBottom();
+      if (!(img instanceof HTMLImageElement) || !img.classList.contains('p80-img')) return;
+      const src = img.getAttribute('src');
+      const w = img.naturalWidth;
+      const h = img.naturalHeight;
+      if (!src || !w || !h) return;
+      const known = state.imageSizes[src];
+      if (known && known.w === w && known.h === h) return; // already sized → no reflow loop
+      state.imageSizes[src] = { w, h };
+      reflowForImages();
     },
     { capture: true, signal }
   );

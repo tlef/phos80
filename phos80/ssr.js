@@ -12,17 +12,23 @@ import { renderLines } from './core/render.js';
 /**
  * Doc → HTML string for one screen block (innerHTML of .p80-screen).
  * opts: cols (default 80), borders ('unicode' | 'ascii'),
- * externalLinks ('_blank' | '_self').
+ * externalLinks ('_blank' | '_self'), and for images: cellRatio (charW/lineH,
+ * default 0.5) plus imageSizes ({ src: { w, h } }) so images reserve the right
+ * number of rows server-side. Without either, images fall back to their
+ * `aspect` hint or a square.
  */
-export function renderScreen(doc, { cols = 80, borders, externalLinks } = {}) {
-  const lines = layoutDoc(doc, cols, { borders });
+export function renderScreen(
+  doc,
+  { cols = 80, borders, externalLinks, cellRatio, imageSizes } = {}
+) {
+  const lines = layoutDoc(doc, cols, { borders, cellRatio, imageSizes });
   assertWidth(lines, cols);
   return `<div class="p80-block">${renderLines(lines, { externalLinks })}</div>`;
 }
 
 /** Doc → plain text at `cols`, e.g. for previews or text-only user agents. */
-export function renderText(doc, { cols = 80, borders } = {}) {
-  return layoutDoc(doc, cols, { borders })
+export function renderText(doc, { cols = 80, borders, cellRatio, imageSizes } = {}) {
+  return layoutDoc(doc, cols, { borders, cellRatio, imageSizes })
     .map((line) => line.map((s) => s.text).join(''))
     .join('\n');
 }

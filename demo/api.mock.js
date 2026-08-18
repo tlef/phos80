@@ -145,6 +145,8 @@ const CANNED = {
               src: 'poster.svg',
               alt: 'Retro travel poster: a jungle moon beneath an orange gas giant',
               width: 36,
+              aspect: 480 / 720, // lets layout reserve rows before it loads
+
               align: 'center',
               treatment,
               link: 'poster.svg',

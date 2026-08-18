@@ -52,11 +52,14 @@ function renderImageSeg(s, opts) {
   if (!safe) return `<span>${escapeHTML(s.text)}</span>`; // bad src → stays blank cells
   const cells = s.text.length;
   const t = TREATMENTS.has(treatment) ? treatment : 'phosphor';
-  // Height lives on the row (.p80-line) only — `lh` inside the box would
-  // resolve against its own line-height:0. The box/img fill the row via %.
+  // The box is zero-height so the anchor row stays one cell tall; the frame
+  // inside it is absolutely positioned and paints down over the rows the
+  // layout engine reserved for it.
   const box =
     `<span class="p80-imgbox p80-t-${t}" style="width:${cells}ch">` +
-    `<img class="p80-img${rows ? '' : ' p80-img-auto'}" src="${escapeHTML(safe)}" alt="${escapeHTML(alt)}" loading="lazy"></span>`;
+    `<span class="p80-imgframe" style="height:${Math.max(1, rows || 1)}lh">` +
+    `<img class="p80-img" src="${escapeHTML(safe)}" alt="${escapeHTML(alt)}" loading="lazy">` +
+    `</span></span>`;
   if (link) {
     const sh = safeHref(link);
     if (sh) {
@@ -101,14 +104,6 @@ function renderSeg(s, opts) {
  */
 export function renderLines(lines, opts) {
   return lines
-    .map((line) => {
-      // A line holding an image is as tall as the image (in whole rows);
-      // height:auto until the client snaps unmeasured images on load.
-      const img = line.find((s) => s.image);
-      const style = img
-        ? ` style="height:${img.image.rows ? `${img.image.rows}lh` : 'auto'}"`
-        : '';
-      return `<div class="p80-line"${style}>${line.map((s) => renderSeg(s, opts)).join('')}</div>`;
-    })
+    .map((line) => `<div class="p80-line">${line.map((s) => renderSeg(s, opts)).join('')}</div>`)
     .join('\n');
 }

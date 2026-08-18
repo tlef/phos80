@@ -61,7 +61,11 @@ Rendered as `[ NEXT ]`, clickable/focusable; clicking dispatches `command` (defa
   "width": 40, "height": 20, "align": "center",
   "treatment": "phosphor", "link": "/img/x-full.jpg" }
 ```
-Inline image, snapped to the character grid: `width` in cells (default `min(40, cols)`, clamped to the viewport), `height` in rows — omit it and the client snaps to whole rows once the image loads (`object-fit: cover` absorbs the sub-row crop). `treatment`: `phosphor` (default — monochrome, tinted to the theme foreground, like it's drawn on the tube), `pixel` (adds chunky pixelation), `plain` (untouched). `link` wraps the image (URL or command, same rules as `[link=…]`). `src` may be http(s) or a scheme-less relative path. `alt` is required for accessibility and SEO. Images render through SSR as normal `<img>` tags; they are the one widget that isn't literal characters, so they don't copy as text.
+Inline image occupying a **rectangle of the grid**: `width` cells wide (default `min(40, cols)`, clamped to the viewport) and N rows tall, where N comes from `height` if given, else the image's measured shape, else the `aspect` hint (intrinsic width ÷ height, e.g. `0.667` for a 2:3 poster), else a square. Because those rows are real lines, frames draw borders down both sides of an image and columns stay aligned beside one; `object-fit: cover` absorbs the sub-row rounding.
+
+Supply `height` or `aspect` for anything rendered server-side — otherwise the prerender guesses and the client reflows once it has measured the file (the same one-time correction the 80-column prerender makes for width).
+
+`treatment`: `phosphor` (default — monochrome, tinted to the theme foreground, like it's drawn on the tube), `pixel` (adds chunky pixelation), `plain` (untouched). `link` wraps the image (URL or command, same rules as `[link=…]`). `src` may be http(s) or a scheme-less relative path. `alt` is required for accessibility and SEO. Images render through SSR as normal `<img>` tags; they are the one widget that isn't literal characters, so they copy as a blank rectangle.
 
 ### rule
 ```jsonc

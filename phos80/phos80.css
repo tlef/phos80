@@ -195,28 +195,36 @@
 /* ------------------------------------------------------------------ */
 /* Inline images (image widget) — grid-snapped, CRT-treated           */
 /* ------------------------------------------------------------------ */
+/* The box occupies the anchor row's cells but no height, so that row stays
+   one cell tall; .p80-imgframe is absolutely positioned and paints down over
+   the blank rows the layout engine reserved beneath it. */
 .p80-imgbox {
+  position: relative;
   display: inline-block;
   vertical-align: top;
+  height: 0; /* keeps the anchor row one cell tall */
+  /* NB: no line-height:0 here — `lh` inside .p80-imgframe resolves against
+     its own inherited line-height, which must stay the terminal's row height. */
+}
+
+.p80-imgframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
   overflow: hidden;
-  line-height: 0;
-  height: 100%; /* fills the row's height (set in lh on .p80-line) */
 }
 
 .p80-img {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover; /* absorbs the sub-row crop from row snapping */
+  object-fit: cover; /* absorbs the sub-row crop from row rounding */
 }
 
-.p80-img-auto {
-  height: auto; /* until the client snaps it to whole rows on load */
-}
-
-/* 'phosphor': luminosity blend over the theme foreground → the image reads
+/* 'phosphor': luminosity blend over the theme foreground -> the image reads
    as drawn on the tube, and re-tints when the theme changes. */
-.p80-t-phosphor {
+.p80-t-phosphor .p80-imgframe {
   background: var(--amber);
   isolation: isolate;
 }
@@ -231,9 +239,9 @@
 }
 
 .p80-imglink {
-  line-height: 0;
   display: inline-block;
   vertical-align: top;
+  height: 0;
 }
 
 /* Buttons & command-links: real focusable elements drawn as characters */
