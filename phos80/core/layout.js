@@ -171,6 +171,9 @@ function layoutWidget(w, cols, out, opts) {
     case 'columns':
       layoutColumns(w, cols, out, opts);
       break;
+    case 'row':
+      layoutRow(w, cols, out);
+      break;
     case 'buttons':
       layoutButtons(w, cols, out);
       break;
@@ -209,6 +212,61 @@ function layoutFrame(w, cols, out, opts) {
   }
 
   out.push([seg(b.bl + b.h.repeat(Math.max(0, cols - 2)) + b.br, bs)]);
+}
+
+/**
+ * One line, parts pushed to the edges — the terminal status-bar/leader idiom:
+ *   { type: 'row', parts: ['[b]help[/b]', 'this screen'], fill: '.' }
+ * First part flush left, last flush right, a middle part centred; the gaps
+ * are filled with `fill` (default space). Unlike `columns`, widths come from
+ * the content, not a proportional split. If the parts can't fit on one line
+ * they stack, each keeping its edge alignment.
+ */
+function layoutRow(w, cols, out) {
+  const parts = (w.parts ?? []).map((p) => parse(String(p ?? '')));
+  if (!parts.length) return;
+  if (parts.length === 1) {
+    for (const line of wrapSegs(parts[0], cols)) out.push(padSegs(line, cols));
+    return;
+  }
+
+  const fillChar = (w.fill ?? ' ')[0] ?? ' ';
+  const fillStyle = w.fillColor ? { color: w.fillColor } : fillChar === ' ' ? {} : { dim: true };
+  const fillSeg = (n) => seg(fillChar.repeat(Math.max(0, n)), fillStyle);
+  const lens = parts.map(visLen);
+  const total = lens.reduce((a, b) => a + b, 0);
+  const gaps = parts.length - 1;
+
+  // Doesn't fit (needs at least one fill cell per gap): stack instead.
+  if (total + gaps > cols) {
+    parts.forEach((p, i) => {
+      const align = i === 0 ? 'left' : i === parts.length - 1 ? 'right' : 'center';
+      for (const line of wrapSegs(p, cols)) out.push(padSegs(line, cols, align));
+    });
+    return;
+  }
+
+  // Three parts: centre the middle one properly, when the gaps allow.
+  if (parts.length === 3) {
+    const midStart = Math.floor((cols - lens[1]) / 2);
+    const g1 = midStart - lens[0];
+    const g2 = cols - midStart - lens[1] - lens[2];
+    if (g1 >= 1 && g2 >= 1) {
+      out.push([...parts[0], fillSeg(g1), ...parts[1], fillSeg(g2), ...parts[2]]);
+      return;
+    }
+  }
+
+  // Otherwise spread the slack evenly, leftmost gaps taking the remainder.
+  const slack = cols - total;
+  const base = Math.floor(slack / gaps);
+  let extra = slack - base * gaps;
+  const line = [];
+  parts.forEach((p, i) => {
+    if (i) line.push(fillSeg(base + (extra-- > 0 ? 1 : 0)));
+    line.push(...p);
+  });
+  out.push(line);
 }
 
 /**

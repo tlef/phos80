@@ -42,6 +42,16 @@ export interface ColumnsWidget extends WidgetBase {
   min?: number;
 }
 
+export interface RowWidget extends WidgetBase {
+  type: 'row';
+  /** BBCode strings: first flush left, last flush right, a middle one centred. */
+  parts: string[];
+  /** Gap fill character; default ' '. */
+  fill?: string;
+  /** Colour for the fill; non-space fills are dim by default. */
+  fillColor?: ColorName;
+}
+
 export interface ButtonItem {
   label: string;
   /** Dispatched on click; defaults to the lowercased label. */
@@ -87,6 +97,7 @@ export type Widget =
   | TextWidget
   | FrameWidget
   | ColumnsWidget
+  | RowWidget
   | ButtonsWidget
   | ImageWidget
   | RuleWidget

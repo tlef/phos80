@@ -43,6 +43,12 @@ Box-drawn border around its children. `border`: `single` (default) | `double`. `
 ```
 Side-by-side children — the terminal's flexbox. Each child is one column, laid out independently at its column width. `widths` are relative weights. As many columns as fit at `min` width share a row; extras wrap to the next row; at narrow viewports everything stacks full-width.
 
+### row
+```jsonc
+{ "type": "row", "parts": ["[b]help[/b]", "this screen"], "fill": ".", "fillColor": "brblack" }
+```
+One line with its parts pushed to the edges — the status-bar / dot-leader idiom. The first part is flush left, the last flush right, and with exactly three parts the middle one is centred; remaining gaps are filled with `fill` (default a space; non-space fills render dim unless `fillColor` is given). Unlike `columns`, widths come from the content rather than a proportional split, so a short right-hand value never squeezes the left. If the parts can't fit on one line they stack, each keeping its edge alignment.
+
 ### buttons
 ```jsonc
 { "type": "buttons", "align": "left", "items": [ { "label": "NEXT", "command": "news 2", "color": "brwhite" } ] }

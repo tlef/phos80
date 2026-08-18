@@ -91,15 +91,19 @@ const CANNED = {
         type: 'frame',
         title: 'COMMANDS',
         children: [
-          { type: 'text', content: '[brwhite][b]help[/b][/brwhite]          this screen' },
-          { type: 'text', content: '[brwhite][b]about[/b][/brwhite]         who is this machine' },
-          { type: 'text', content: '[brwhite][b]news[/b][/brwhite] [dim]<n>[/dim]      read the wire, page by page' },
-          { type: 'text', content: '[brwhite][b]mode[/b][/brwhite] [dim]<m>[/dim]      display mode: [green]scroll[/green] or [green]page[/green]' },
-          { type: 'text', content: '[brwhite][b]theme[/b][/brwhite] [dim]<t>[/dim]     phosphor: [green]amber[/green], [green]green[/green], [green]white[/green] or [green]ice[/green]' },
-          { type: 'text', content: '[brwhite][b]effects[/b][/brwhite] [dim]…[/dim]    CRT effects, e.g. [green]effects scanlines off[/green]' },
-          { type: 'text', content: '[brwhite][b]speed[/b][/brwhite] [dim]<n>[/dim]     typewriter cps, or [green]off[/green] / [green]default[/green]' },
-          { type: 'text', content: '[brwhite][b]poster[/b][/brwhite] [dim]<t>[/dim]    inline image; treatments [green]phosphor[/green]|[green]pixel[/green]|[green]plain[/green]' },
-          { type: 'text', content: '[brwhite][b]clear[/b][/brwhite]         wipe the screen' },
+          // `row` pushes parts to the edges of one line — no hand-counted
+          // padding, and the leaders redraw at every width.
+          ...[
+            ['[brwhite][b]help[/b][/brwhite]', 'this screen'],
+            ['[brwhite][b]about[/b][/brwhite]', 'who is this machine'],
+            ['[brwhite][b]news[/b][/brwhite] [dim]<n>[/dim]', 'read the wire, page by page'],
+            ['[brwhite][b]mode[/b][/brwhite] [dim]<m>[/dim]', '[green]scroll[/green] or [green]page[/green] display'],
+            ['[brwhite][b]theme[/b][/brwhite] [dim]<t>[/dim]', '[green]amber[/green] [green]green[/green] [green]white[/green] [green]ice[/green]'],
+            ['[brwhite][b]effects[/b][/brwhite] [dim]…[/dim]', 'CRT effects, e.g. [green]scanlines 0.5[/green]'],
+            ['[brwhite][b]speed[/b][/brwhite] [dim]<n>[/dim]', 'typewriter cps, [green]off[/green] or [green]default[/green]'],
+            ['[brwhite][b]poster[/b][/brwhite] [dim]<t>[/dim]', 'inline image + treatments'],
+            ['[brwhite][b]clear[/b][/brwhite]', 'wipe the screen'],
+          ].map(([cmd, desc]) => ({ type: 'row', parts: [cmd, desc], fill: '.' })),
           { type: 'spacer' },
           { type: 'text', content: '[dim]tip: words like[/dim] [link=about]about[/link] [dim]are links — click or tab to them.[/dim]' },
         ],
