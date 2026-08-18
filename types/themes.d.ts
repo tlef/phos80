@@ -15,8 +15,13 @@ export interface ThemeEffects {
   scanlines?: boolean | number;
   vignette?: boolean | number;
   glow?: boolean | number;
-  /** false disables the overlay flicker animation. */
+  /** false disables the overlay flicker animation (whole-screen brightness). */
   flicker?: boolean;
+  /**
+   * Phosphor flicker on the text itself — irregular brightness dips over all
+   * terminal content. Opt-in (off unless set); number sets amplitude 0..1.
+   */
+  textFlicker?: boolean | number;
 }
 
 export interface ThemeConfig {

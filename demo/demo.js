@@ -13,9 +13,12 @@ const THEME_NAMES = Object.keys(THEMES);
 
 // The demo's theme/effects state. setTheme() applies a whole config, so
 // local commands merge their changes here and reapply.
-const themeState = { preset: 'amber', effects: {} };
+const themeState = { preset: 'amber', effects: { textFlicker: 0.7 } };
 
-const EFFECT_NAMES = ['scanlines', 'glow', 'flicker', 'vignette'];
+const EFFECT_NAMES = ['scanlines', 'glow', 'flicker', 'vignette', 'textFlicker'];
+
+/** Command args arrive lowercased, so match effect names case-insensitively. */
+const resolveEffect = (name) => EFFECT_NAMES.find((n) => n.toLowerCase() === name);
 
 function applyThemeState(term) {
   term.setTheme({ preset: themeState.preset, effects: themeState.effects });
@@ -48,6 +51,9 @@ createTerminal({
     placeholder: 'type help',
     header: HEADER_DOC,
   },
+
+  // Text flicker is opt-in framework-side; the demo turns it on to show it off.
+  theme: { preset: themeState.preset, effects: themeState.effects },
 
   commands: {
     // A site-supplied local command: switches the phosphor at runtime.
@@ -85,7 +91,8 @@ createTerminal({
           ],
         };
       }
-      if (!EFFECT_NAMES.includes(name)) {
+      const key = resolveEffect(name);
+      if (!key) {
         return `[red]unknown effect:[/red] ${name} [dim]— try[/dim] ${EFFECT_NAMES.map((n) => `[green]${n}[/green]`).join(', ')}`;
       }
       const num = Number(value);
@@ -93,10 +100,10 @@ createTerminal({
       if (value === 'on') level = true;
       else if (value === 'off') level = false;
       else if (!Number.isNaN(num) && value !== undefined) level = Math.max(0, Math.min(1, num));
-      else return `[red]usage:[/red] effects ${name} [green]on[/green]|[green]off[/green]|[green]0..1[/green]`;
-      themeState.effects[name] = level;
+      else return `[red]usage:[/red] effects ${key} [green]on[/green]|[green]off[/green]|[green]0..1[/green]`;
+      themeState.effects[key] = level;
       applyThemeState(term);
-      return `${name} ${fmtEffect(name)}`;
+      return `${key} ${fmtEffect(key)}`;
     },
 
     // Typewriter speed: `speed 2000`, `speed off` (instant), `speed default`.

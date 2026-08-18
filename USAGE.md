@@ -117,7 +117,8 @@ theme: {
   effects: {
     scanlines: 0.5,    // false | true | 0..1  ← the interlace lines
     glow: true,        // false | true | 0..1
-    flicker: false,    // false disables the overlay flicker
+    flicker: false,    // false disables the overlay flicker (whole-screen)
+    textFlicker: 0.7,  // phosphor flicker on the TEXT; opt-in, 0..1 amplitude
     vignette: true,    // false | true | 0..1
   },
 }

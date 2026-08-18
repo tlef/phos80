@@ -146,7 +146,7 @@ export function createTerminal({
   function applyTheme(t) {
     for (const prop of appliedVars) mount.style.removeProperty(prop);
     appliedVars.length = 0;
-    mount.classList.remove('p80-fx-noglow', 'p80-fx-noflicker');
+    mount.classList.remove('p80-fx-noglow', 'p80-fx-noflicker', 'p80-fx-textflicker');
     if (t == null) return;
 
     const setVar = (prop, value) => {
@@ -163,6 +163,11 @@ export function createTerminal({
     if (fx.glow === false) mount.classList.add('p80-fx-noglow');
     else if (fx.glow !== undefined) setVar('--p80-glow', level(fx.glow));
     if (fx.flicker === false) mount.classList.add('p80-fx-noflicker');
+    // Text flicker is opt-in: a constant animation over all content.
+    if (fx.textFlicker) {
+      mount.classList.add('p80-fx-textflicker');
+      setVar('--p80-textflicker', level(fx.textFlicker));
+    }
   }
 
   applyTheme(theme);

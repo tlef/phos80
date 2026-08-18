@@ -94,6 +94,25 @@
   text-shadow: none;
 }
 
+/* Text flicker — the phosphor itself pulsing, as opposed to the overlay
+   flicker (whole-screen brightness). Irregular dips, mostly steady, like a
+   tube with a tired power supply. Opacity-only so it stays composited. */
+@media (prefers-reduced-motion: no-preference) {
+  .p80-fx-textflicker .p80-term {
+    animation: p80-textflicker 4.2s linear infinite;
+  }
+}
+
+@keyframes p80-textflicker {
+  0%, 1.6%, 3%, 17%, 19%, 36%, 40%, 62%, 64.5%, 81%, 83.5%, 100% { opacity: 1; }
+  2.2% { opacity: calc(1 - 0.10 * var(--p80-textflicker, 1)); }
+  18%  { opacity: calc(1 - 0.06 * var(--p80-textflicker, 1)); }
+  37.5% { opacity: calc(1 - 0.15 * var(--p80-textflicker, 1)); }
+  38.8% { opacity: calc(1 - 0.04 * var(--p80-textflicker, 1)); }
+  63.4% { opacity: calc(1 - 0.08 * var(--p80-textflicker, 1)); }
+  82.4% { opacity: calc(1 - 0.12 * var(--p80-textflicker, 1)); }
+}
+
 .p80-screen {
   flex: 1;
   overflow-y: auto;
