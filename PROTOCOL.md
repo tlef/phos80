@@ -35,7 +35,7 @@ A doc is `{ "widgets": Widget[] }`. Widgets stack vertically; layout is computed
 ```jsonc
 { "type": "frame", "title": "NEWS", "border": "single", "color": "red", "children": [ Widget… ] }
 ```
-Box-drawn border around its children. `border`: `single` (default) | `double`. `color` tints the **border** (and is the title's default colour). `title` is embedded in the top border, bold, and accepts the same inline markup as text — so `"title": "[cyan]NEWS[/cyan]"` recolours just the title while the border keeps `color`. Frames nest.
+Box-drawn border around its children. `border`: `single` (default) | `double`. `color` tints the **border** (and is the title's default colour). `title` is embedded in the top border and accepts the same inline markup as text — it renders as plain text unless styled, so `"title": "[b][cyan]NEWS[/cyan][/b]"` makes it bold and cyan while the border keeps `color`. Frames nest.
 
 ### columns
 ```jsonc

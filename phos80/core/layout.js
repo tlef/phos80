@@ -189,13 +189,12 @@ function layoutFrame(w, cols, out, opts) {
   const inner = Math.max(1, cols - 4); // "│ content │"
 
   // Top border, optionally with an embedded title: ┌─ TITLE ────┐
-  // Titles accept the same inline markup as text content; the frame's colour
-  // and bold are the defaults each run inherits, so [cyan]…[/cyan] in a title
-  // recolours just the title and leaves the border alone.
+  // Titles accept the same inline markup as text content and inherit only the
+  // frame's colour — style them explicitly ([b]TITLE[/b], [cyan]…[/cyan]).
   const maxTitle = Math.max(0, cols - 4);
   let titleSegs = [];
   if (w.title) {
-    const base = { ...bs, bold: true };
+    const base = { ...bs };
     const runs = parse(String(w.title)).map((s) => ({ ...s, style: { ...base, ...s.style } }));
     titleSegs = [seg(' ', bs), ...runs, seg(' ', bs)];
     if (visLen(titleSegs) > maxTitle) titleSegs = sliceSegs(titleSegs, 0, maxTitle);

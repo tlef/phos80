@@ -217,7 +217,7 @@ function errorDoc(cmd) {
       {
         type: 'frame',
         color: 'red',
-        title: 'ERROR',
+        title: '[b]ERROR[/b]', // titles are plain unless styled
         children: [
           { type: 'text', content: `[red]command not recognized:[/red] [brwhite]${cmd}[/brwhite]` },
           { type: 'text', content: '[dim]try[/dim] [link=help]help[/link]' },
