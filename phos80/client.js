@@ -557,7 +557,10 @@ export function createTerminal({
     configure: (partial = {}) => {
       Object.assign(cfg, partial);
       syncFlow();
-      if (remeasure()) renderAll();
+      remeasure();
+      // Always re-render: settings like borderSet and externalLinks change how
+      // existing content lays out, not just the next response.
+      renderAll();
     },
     get settings() {
       return { ...cfg };

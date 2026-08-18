@@ -107,6 +107,28 @@ createTerminal({
       return `${key} ${fmtEffect(key)}`;
     },
 
+    // Frame/rule charset: box-drawing glyphs or pure ASCII.
+    borders: (args, term) => {
+      const set = args[0];
+      if (set !== 'unicode' && set !== 'ascii') {
+        return `[red]usage:[/red] borders [green]unicode[/green]|[green]ascii[/green] [dim](now: [/dim][green]${term.settings.borderSet}[/green][dim])[/dim]`;
+      }
+      term.configure({ borderSet: set }); // re-lays out the whole scrollback
+      return `borders drawn with [b]${set}[/b] characters`;
+    },
+
+    // Whole-page scrolling vs a fixed screen with internal scrollback.
+    scrolling: (args, term) => {
+      const how = args[0];
+      if (how !== 'document' && how !== 'viewport') {
+        return `[red]usage:[/red] scrolling [green]document[/green]|[green]viewport[/green] [dim](now: [/dim][green]${term.settings.scrolling}[/green][dim])[/dim]`;
+      }
+      term.configure({ scrolling: how });
+      return how === 'document'
+        ? 'the [b]page[/b] scrolls — the terminal grows with its output'
+        : 'a fixed [b]screen[/b] scrolls its own scrollback';
+    },
+
     // Typewriter speed: `speed 2000`, `speed off` (instant), `speed default`.
     speed: (args, term) => {
       const v = args[0];

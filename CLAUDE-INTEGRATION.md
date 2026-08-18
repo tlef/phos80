@@ -63,6 +63,8 @@ import type { Envelope } from 'phos80/protocol';
 - `settings.scrolling`: `'document'` (default — page grows, browser scrolls) vs `'viewport'` (fixed screen, internal scrollback). BBS `page` mode always uses the fixed viewport.
 - Runtime control: `term.setTheme()`, `term.configure({ typeCps, borderSet, … })`, `term.setMode()`, `term.setHeader()`, `term.print(doc)`, `term.dispatch(cmd)`.
 - Local (client-side) commands go in `commands: {}` config; anything unlisted goes to the transport. Built-ins `clear` and `mode` are on by default.
+- Layout vocabulary beyond the obvious: `columns` for side-by-side panels that stack when narrow, `row` for parts pushed to a line's edges (status lines, dot leaders), and a `margin` (cells) accepted by every widget. Frame `title`s take inline markup and are plain unless you style them; `color` tints the border.
+- `image` widgets reserve real grid rows, so give them `height` (rows) or `aspect` (intrinsic width/height) — without one, a server prerender guesses and the client reflows after measuring the file.
 - Responses can install a persistent page-mode masthead via the envelope's `header` field (`null` restores the default).
 - Character widths are one cell per character (ASCII + box drawing); emoji/CJK are not width-aware.
 - After changing served JS modules during development, browsers cache aggressively — hard-refresh when the terminal seems dead (a dead module graph leaves the static SSR content visible but commands non-functional).

@@ -32,13 +32,19 @@ The `phos80/client` specifiers come from installing via npm (`npm i github:tlef/
 
 ## 2. The contract in one paragraph
 
-Every command the visitor types (or button they click) is passed to your `transport`, which must resolve to `{ ok, doc, header? }`. The `doc` is a widget tree — `text` (with alignment), `frame`, `columns` (side-by-side panels that stack when narrow), `buttons`, `image` (inline, grid-snapped, CRT-treated), `rule`, `spacer` — and text content uses BBCode-style tags for color/bold/links. "This frame on the left, that one on the right" is:
+Every command the visitor types (or button they click) is passed to your `transport`, which must resolve to `{ ok, doc, header? }`. The `doc` is a widget tree — `text` (with alignment), `frame`, `columns` (side-by-side panels that stack when narrow), `row` (parts pushed to the line's edges, with optional dot leaders), `buttons`, `image` (inline, occupying real grid rows), `rule`, `spacer`; every one of them also takes a `margin` in character cells. Text content uses BBCode-style tags for color/bold/links, and so do frame titles. "This frame on the left, that one on the right" is:
 
 ```json
 { "type": "columns", "widths": [1, 1], "min": 30, "children": [
     { "type": "frame", "title": "LEFT",  "children": [ … ] },
     { "type": "frame", "title": "RIGHT", "children": [ … ] }
 ] }
+```
+
+A status line or a dot-leader index is a `row`:
+
+```json
+{ "type": "row", "parts": ["[b]help[/b]", "this screen"], "fill": "." }
 ```
 
 Full vocabulary and rules: [PROTOCOL.md](PROTOCOL.md).
@@ -179,4 +185,4 @@ python3 -m http.server 8000        # from the repo root
 open http://localhost:8000/demo/
 ```
 
-Try `help`, `about` (columns), `news 1` (buttons + page-mode masthead via the `header` field), `mode page`, `clear` — and resize the window.
+Try `help` (dot-leader rows), `about` (columns that stack when narrow), `news 1` (buttons + a page-mode masthead installed via the `header` field), `poster` (an inline image inside a column, with CRT treatments), `theme green`, `effects scanlines 0.4`, `speed 200`, `borders ascii`, `scrolling viewport`, `mode page`, `clear` — and resize the window at every step.

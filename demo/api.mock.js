@@ -102,6 +102,8 @@ const CANNED = {
             ['[brwhite][b]effects[/b][/brwhite] [dim]…[/dim]', 'CRT effects, e.g. [green]scanlines 0.5[/green]'],
             ['[brwhite][b]speed[/b][/brwhite] [dim]<n>[/dim]', 'typewriter cps, [green]off[/green] or [green]default[/green]'],
             ['[brwhite][b]poster[/b][/brwhite] [dim]<t>[/dim]', 'inline image + treatments'],
+            ['[brwhite][b]borders[/b][/brwhite] [dim]<s>[/dim]', '[green]unicode[/green] or [green]ascii[/green] frames'],
+            ['[brwhite][b]scrolling[/b][/brwhite] [dim]<s>[/dim]', '[green]document[/green] or [green]viewport[/green]'],
             ['[brwhite][b]clear[/b][/brwhite]', 'wipe the screen'],
           ].map(([cmd, desc]) => ({ type: 'row', parts: [cmd, desc], fill: '.' })),
           { type: 'spacer' },
@@ -137,25 +139,50 @@ const CANNED = {
           color: 'cyan',
           title: '[bryellow]TRAVEL BUREAU[/bryellow]',
           children: [
-            { type: 'text', align: 'center', content: '[bryellow][b]VISIT BEAUTIFUL YAVIN 4[/b][/bryellow]' },
-            { type: 'text', align: 'center', content: '[dim]jungle moon of the gas giant Yavin[/dim]' },
-            { type: 'spacer' },
             {
-              type: 'image',
-              src: 'poster.svg',
-              alt: 'Retro travel poster: a jungle moon beneath an orange gas giant',
-              width: 36,
-              aspect: 480 / 720, // lets layout reserve rows before it loads
-
-              align: 'center',
-              treatment,
-              link: 'poster.svg',
-            },
-            { type: 'spacer' },
-            {
-              type: 'text',
-              align: 'center',
-              content: `[dim]treatment:[/dim] [green]${treatment}[/green] [dim]· click the poster for full size[/dim]`,
+              // An image inside a column: it reserves real grid rows, so the
+              // text column beside it stays row-aligned and the frame draws
+              // borders down both sides. Stacks below 30 cells per column.
+              type: 'columns',
+              widths: [2, 3],
+              min: 30,
+              gap: 3,
+              children: [
+                {
+                  type: 'image',
+                  src: 'poster.svg',
+                  alt: 'Retro travel poster: a jungle moon beneath an orange gas giant',
+                  aspect: 480 / 720, // reserves the right rows before it loads
+                  treatment,
+                  link: 'poster.svg',
+                },
+                {
+                  type: 'frame',
+                  children: [
+                    { type: 'text', content: '[bryellow][b]VISIT BEAUTIFUL YAVIN 4[/b][/bryellow]' },
+                    { type: 'text', content: '[dim]jungle moon of the gas giant Yavin[/dim]' },
+                    { type: 'rule' },
+                    { type: 'spacer' },
+                    {
+                      type: 'text',
+                      content:
+                        'Temperate rainforest, ancient stone temples, and a sky ' +
+                        'filled from horizon to horizon by the gas giant itself.',
+                      margin: [1, 1],
+                    },
+                    { type: 'spacer' },
+                    { type: 'row', parts: ['GRAVITY', '[brwhite]0.9 g[/brwhite]'], fill: '.' },
+                    { type: 'row', parts: ['DAY', '[brwhite]24 h[/brwhite]'], fill: '.' },
+                    { type: 'row', parts: ['MOONS', '[brwhite]none[/brwhite]'], fill: '.' },
+                    { type: 'spacer' },
+                    {
+                      type: 'text',
+                      content: `[dim]treatment:[/dim] [green]${treatment}[/green]`,
+                    },
+                    { type: 'text', content: '[dim]click the poster for full size[/dim]' },
+                  ],
+                },
+              ],
             },
           ],
         },
