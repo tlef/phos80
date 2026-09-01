@@ -78,6 +78,67 @@ export function wrapSegs(segs, width) {
   return lines.length ? lines : [[]];
 }
 
+/**
+ * Expand tabs to `tab`-column stops, tracking the visible column across
+ * segments — a tab is one JS character but many cells, which would break the
+ * width invariant if it reached the renderer.
+ */
+export function expandTabs(segs, tab = 4) {
+  let col = 0;
+  return segs.map((s) => {
+    if (!s.text.includes('\t')) {
+      col += s.text.length;
+      return s;
+    }
+    let text = '';
+    for (let i = 0; i < s.text.length; i++) {
+      const ch = s.text[i];
+      if (ch === '\t') {
+        const n = tab - (col % tab);
+        text += spaces(n);
+        col += n;
+      } else {
+        text += ch;
+        col++;
+      }
+    }
+    return { ...s, text };
+  });
+}
+
+/**
+ * Hard-wrap ONE logical code line at `width` → Segment[][] (unpadded rows).
+ * Unlike wrapSegs there is no soft break at spaces and nothing is eaten: an
+ * over-wide line continues on the next row, indented to its own leading
+ * whitespace and prefixed with a dim `mark`, so a continuation can't be
+ * mistaken for a new statement at that indent. Every character of the
+ * source survives — what a real terminal does, minus the ambiguity.
+ *
+ * The continuation prefix is capped so at least min(8, width) cells of code
+ * remain on each row; only if the width can't hold the marker plus that
+ * minimum does the marker go too.
+ */
+export function wrapCodeSegs(segs, width, mark = '↪') {
+  const text = segs.map((s) => s.text).join('');
+  if (text.length <= width) return [segs];
+  const minCode = Math.min(8, Math.max(1, width));
+  let lead = mark ? mark + ' ' : '';
+  if (width - lead.length < minCode) lead = '';
+  const indentLen = /^ */.exec(text)[0].length;
+  const indent = Math.max(0, Math.min(indentLen, width - lead.length - minCode));
+  const avail = width - indent - lead.length;
+
+  const rows = [sliceSegs(segs, 0, width)];
+  for (let start = width; start < text.length; start += avail) {
+    const row = [];
+    if (indent) row.push(seg(spaces(indent)));
+    if (lead) row.push(seg(lead, { dim: true }));
+    row.push(...sliceSegs(segs, start, start + avail));
+    rows.push(row);
+  }
+  return rows;
+}
+
 // ---------------------------------------------------------------------------
 // Widgets
 // ---------------------------------------------------------------------------
@@ -89,11 +150,13 @@ const BORDERS = {
     single: { tl: '┌', tr: '┐', bl: '└', br: '┘', h: '─', v: '│' },
     double: { tl: '╔', tr: '╗', bl: '╚', br: '╝', h: '═', v: '║' },
     rule: '─',
+    wrap: '↪', // continuation marker for over-wide code lines
   },
   ascii: {
     single: { tl: '+', tr: '+', bl: '+', br: '+', h: '-', v: '|' },
     double: { tl: '+', tr: '+', bl: '+', br: '+', h: '=', v: '|' },
     rule: '-',
+    wrap: '>',
   },
 };
 
@@ -152,6 +215,9 @@ function layoutWidget(w, cols, out, opts) {
       }
       break;
     }
+    case 'code':
+      layoutCode(w, cols, out, opts);
+      break;
     case 'spacer': {
       for (let i = 0; i < (w.lines ?? 1); i++) out.push([seg(spaces(cols))]);
       break;
@@ -180,6 +246,35 @@ function layoutWidget(w, cols, out, opts) {
     default:
       out.push(padSegs(parse(`[red]?[/red] unknown widget: ${w.type}`), cols));
   }
+}
+
+/**
+ * Preformatted code — text that must not reflow.
+ *   { type: 'code', content: 'BBCode string', gutter?: boolean }
+ * Every `\n`-separated line is one logical line, laid out verbatim: leading
+ * whitespace is kept, tabs expand to 4-column stops, nothing soft-wraps at
+ * spaces. Lines wider than the widget continue on the next row (see
+ * wrapCodeSegs). Inline markup works as in `text` — that is how the producer
+ * supplies syntax colouring; phos80 tokenises nothing. `gutter: true` adds
+ * dim right-aligned line numbers, sized to the line count, inside the width.
+ */
+function layoutCode(w, cols, out, opts) {
+  const set = BORDERS[opts?.borders] ?? BORDERS.unicode;
+  const lines = String(w.content ?? '').split(/\r?\n/);
+  const digits = String(lines.length).length;
+  const gutterW = digits + 3; // "NN │ "
+  // A gutter that would leave fewer than 4 cells of code is dropped.
+  const gutter = Boolean(w.gutter) && cols - gutterW >= 4;
+  const inner = gutter ? cols - gutterW : cols;
+  const gutterSeg = (label) => seg(label.padStart(digits) + ' ' + set.single.v + ' ', { dim: true });
+
+  lines.forEach((src, i) => {
+    const segs = expandTabs(parse(src));
+    wrapCodeSegs(segs, inner, set.wrap).forEach((row, j) => {
+      const body = padSegs(row, inner);
+      out.push(gutter ? [gutterSeg(j === 0 ? String(i + 1) : ''), ...body] : body);
+    });
+  });
 }
 
 function layoutFrame(w, cols, out, opts) {

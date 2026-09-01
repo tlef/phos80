@@ -31,6 +31,19 @@ A doc is `{ "widgets": Widget[] }`. Widgets stack vertically; layout is computed
 ```
 `align`: `left` (default) | `center` | `right`. `\n` splits paragraphs; long lines word-wrap.
 
+### code
+```jsonc
+{ "type": "code", "content": "[magenta]const[/magenta] count = [yellow]1[/yellow];\n  [dim]// indented[/dim]", "gutter": true }
+```
+Preformatted source — `text` that must not reflow. `\n` separates lines and each line is one logical line of code, laid out verbatim: leading whitespace is kept, tabs expand to 4-column stops, and nothing soft-wraps at spaces (a `text` widget would eat the indent of a wrapped line, so a broken `return <button` reads like a new statement). `content` takes the same inline markup as `text`; that is how syntax colouring arrives, as colour tags from the producer — phos80 tokenises and highlights nothing. `gutter: true` prefixes dim right-aligned line numbers sized to the line count, inside the widget's width (`  7 │ …`, `|` with ASCII borders); it is dropped if fewer than 4 cells would remain for code.
+
+**Over-wide lines continue on the next row**, indented to the original line's leading whitespace and prefixed with a dim `↪ ` (`> ` with ASCII borders). Two rows at 44 columns:
+```
+  return <button onClick={() => setCount(cou
+  ↪ nt + 1)}>{label}</button>;
+```
+This is what a terminal does — `cat` at 44 columns wraps and never drops a character — and it is the only choice that keeps §5 intact *and* keeps every character of the source on screen: each row is exactly the column count, and a copy pastes as it would from a real terminal window, marker and indent included. A horizontal scroller would break the row invariant, and hard truncation would silently hide the tail of a line — for code the worst failure, since a missing `)` or `;` reads as a bug in the source rather than a display limit. The continuation prefix is capped so at least 8 cells of code (or the full width, if narrower) fit on every row; only when the width can't hold the marker plus that minimum is the marker dropped. Producers who want breaks to fall in sensible places break long lines themselves, as they would for any 80-column reader.
+
 ### frame
 ```jsonc
 { "type": "frame", "title": "NEWS", "border": "single", "color": "red", "children": [ Widget… ] }
@@ -109,5 +122,5 @@ The sticky strip above the screen, shown in **page mode**. It is an ordinary doc
 ## 5. Display semantics (informative)
 
 - **scroll mode**: each response appends to a scrollback (commands are echoed); **page mode**: each response replaces the screen, BBS-style. The mode is a client concern; the same docs work in both.
-- Layout invariant: every rendered line is exactly the client's column count in visible characters; alignment and chrome are literal characters, so copied text pastes like real terminal output.
+- Layout invariant: every rendered line is exactly the client's column count in visible characters; alignment and chrome are literal characters, so copied text pastes like real terminal output. Nothing scrolls horizontally: `text` word-wraps, `code` continues over-wide lines on the next row (§2), and no widget truncates content.
 - Character widths are counted one cell per character (ASCII + box drawing). Emoji/CJK are not width-aware in v1.

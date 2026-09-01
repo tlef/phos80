@@ -30,7 +30,7 @@ npm run demo          # or: python3 -m http.server 8000
 open http://localhost:8000/demo/
 ```
 
-Try `help`, `about`, `news 1`, `poster`, `theme green`, `effects scanlines 0.4`, `borders ascii`, `mode page` — then resize the window and watch the frames redraw at the new width.
+Try `help`, `about`, `news 1`, `poster`, `code`, `theme green`, `effects scanlines 0.4`, `borders ascii`, `mode page` — then resize the window and watch the frames redraw at the new width.
 
 ## Design in one breath
 

@@ -22,6 +22,20 @@ export interface TextWidget extends WidgetBase {
   align?: Align;
 }
 
+export interface CodeWidget extends WidgetBase {
+  type: 'code';
+  /**
+   * Preformatted source. \n separates logical lines; leading whitespace is
+   * kept, tabs expand to 4-column stops, and nothing soft-wraps at spaces.
+   * Over-wide lines continue on the next row, indented to the line's own
+   * indent and marked (dim ↪). Takes the same inline markup as text — that
+   * is how the producer supplies syntax colouring; phos80 highlights nothing.
+   */
+  content: string;
+  /** Dim right-aligned line numbers, sized to the line count, inside the width. */
+  gutter?: boolean;
+}
+
 export interface FrameWidget extends WidgetBase {
   type: 'frame';
   /** Embedded in the top border; plain unless styled with inline markup ([b], [cyan]…). */
@@ -102,6 +116,7 @@ export interface SpacerWidget extends WidgetBase {
 
 export type Widget =
   | TextWidget
+  | CodeWidget
   | FrameWidget
   | ColumnsWidget
   | RowWidget

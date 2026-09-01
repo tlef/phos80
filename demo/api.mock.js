@@ -84,6 +84,23 @@ const LOREM_PANEL = {
   ],
 };
 
+// A source listing with producer-supplied colouring. phos80 highlights
+// nothing: the colour tags are part of the content, like any other text.
+const COUNTER_JSX = [
+  "[magenta]import[/magenta] { useState } [magenta]from[/magenta] [green]'react'[/green];",
+  '',
+  '[magenta]export function[/magenta] [brcyan]Counter[/brcyan]({ label }) {',
+  '  [magenta]const[/magenta] [count, setCount] = useState([yellow]0[/yellow]);',
+  '  [dim]// narrow the window: the return below continues, indented and marked[/dim]',
+  '  [magenta]return[/magenta] <[cyan]button[/cyan] [brwhite]onClick[/brwhite]={() => setCount(count + [yellow]1[/yellow])}>{label}: {count}</[cyan]button[/cyan]>;',
+  '}',
+].join('\n');
+
+const SHELL_SESSION = [
+  '[green]$[/green] curl -s /api/cmd -d [yellow]\'{"cmd":"code"}\'[/yellow] | jq .doc.widgets[0].type',
+  '[dim]"frame"[/dim]',
+].join('\n');
+
 const CANNED = {
   help: () => ({
     widgets: [
@@ -102,6 +119,7 @@ const CANNED = {
             ['[brwhite][b]effects[/b][/brwhite] [dim]…[/dim]', 'CRT effects, e.g. [green]scanlines 0.5[/green]'],
             ['[brwhite][b]speed[/b][/brwhite] [dim]<n>[/dim]', 'typewriter cps, [green]off[/green] or [green]default[/green]'],
             ['[brwhite][b]poster[/b][/brwhite] [dim]<t>[/dim]', 'inline image + treatments'],
+            ['[brwhite][b]code[/b][/brwhite]', 'a source listing that never reflows'],
             ['[brwhite][b]borders[/b][/brwhite] [dim]<s>[/dim]', '[green]unicode[/green] or [green]ascii[/green] frames'],
             ['[brwhite][b]scrolling[/b][/brwhite] [dim]<s>[/dim]', '[green]document[/green] or [green]viewport[/green]'],
             ['[brwhite][b]clear[/b][/brwhite]', 'wipe the screen'],
@@ -198,6 +216,42 @@ const CANNED = {
       ],
     };
   },
+
+  code: () => ({
+    widgets: [
+      {
+        type: 'frame',
+        title: '[brcyan]Counter.jsx[/brcyan]',
+        children: [
+          // `code` keeps every logical line whole: no soft-wrap at spaces,
+          // indentation preserved. An over-wide line continues on the next
+          // row with a dim ↪ (> under ASCII borders) so it can't be read as
+          // a new statement. The gutter numbers logical lines, not rows.
+          { type: 'code', gutter: true, content: COUNTER_JSX },
+        ],
+      },
+      {
+        type: 'text',
+        margin: [2, 2],
+        content:
+          '[dim]The colours above arrived as BBCode tags in the content — the ' +
+          'terminal highlights nothing itself. Resize the window and the long ' +
+          'line breaks at the edge, not at a space, keeping its indent.[/dim]',
+      },
+      { type: 'spacer' },
+      { type: 'code', content: SHELL_SESSION, margin: [2, 2] },
+      { type: 'spacer' },
+      {
+        type: 'buttons',
+        align: 'center',
+        items: [
+          { label: 'ASCII', command: 'borders ascii' },
+          { label: 'UNICODE', command: 'borders unicode' },
+          { label: 'HELP' },
+        ],
+      },
+    ],
+  }),
 
   news: (args) => {
     const n = Math.min(NEWS.length, Math.max(1, parseInt(args[0], 10) || 1));
