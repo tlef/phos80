@@ -16,7 +16,12 @@ const reduced =
 
 export function typeIn(block, { srLive, cps = 400, onTick } = {}) {
   if (srLive) srLive.textContent = block.textContent;
-  if (cps <= 0 || (reduced && reduced.matches)) return Promise.resolve();
+  if (cps <= 0 || (reduced && reduced.matches)) {
+    // An instant reveal still reports itself once: callers use onTick to
+    // follow the block as it appears (e.g. scrolling it into view).
+    onTick?.();
+    return Promise.resolve();
+  }
 
   const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT);
   const nodes = [];
