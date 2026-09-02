@@ -313,11 +313,14 @@ function layoutFrame(w, cols, out, opts) {
 
 /**
  * One line, parts pushed to the edges — the terminal status-bar/leader idiom:
- *   { type: 'row', parts: ['[b]help[/b]', 'this screen'], fill: '.' }
+ *   { type: 'row', parts: ['[b]help[/b]', 'this screen'], fill: '.', pad: 1 }
  * First part flush left, last flush right, a middle part centred; the gaps
- * are filled with `fill` (default space). Unlike `columns`, widths come from
- * the content, not a proportional split. If the parts can't fit on one line
- * they stack, each keeping its edge alignment.
+ * are filled with `fill` (default space). `pad` — n, or [after-left,
+ * before-right] — is the number of space cells between a part and the fill
+ * on each side of every gap, so content needn't carry its own spacing.
+ * Unlike `columns`, widths come from the content, not a proportional split.
+ * If the parts can't fit on one line they stack, each keeping its edge
+ * alignment.
  */
 function layoutRow(w, cols, out) {
   const parts = (w.parts ?? []).map((p) => parse(String(p ?? '')));
@@ -329,13 +332,24 @@ function layoutRow(w, cols, out) {
 
   const fillChar = (w.fill ?? ' ')[0] ?? ' ';
   const fillStyle = w.fillColor ? { color: w.fillColor } : fillChar === ' ' ? {} : { dim: true };
-  const fillSeg = (n) => seg(fillChar.repeat(Math.max(0, n)), fillStyle);
+  const [pl, pr] = normPad(w.pad);
+  // A gap: padding spaces, the fill, padding spaces. Padding is plain space
+  // cells, so a space fill is unaffected by it.
+  const fillSeg = (n) => {
+    const fill = n - pl - pr;
+    if (fill < 0) return seg(spaces(n));
+    return [
+      ...(pl ? [seg(spaces(pl))] : []),
+      seg(fillChar.repeat(fill), fillStyle),
+      ...(pr ? [seg(spaces(pr))] : []),
+    ];
+  };
   const lens = parts.map(visLen);
   const total = lens.reduce((a, b) => a + b, 0);
   const gaps = parts.length - 1;
 
-  // Doesn't fit (needs at least one fill cell per gap): stack instead.
-  if (total + gaps > cols) {
+  // Doesn't fit (each gap needs its padding plus one fill cell): stack instead.
+  if (total + gaps * (pl + pr + 1) > cols) {
     parts.forEach((p, i) => {
       const align = i === 0 ? 'left' : i === parts.length - 1 ? 'right' : 'center';
       for (const line of wrapSegs(p, cols)) out.push(padSegs(line, cols, align));
@@ -348,8 +362,8 @@ function layoutRow(w, cols, out) {
     const midStart = Math.floor((cols - lens[1]) / 2);
     const g1 = midStart - lens[0];
     const g2 = cols - midStart - lens[1] - lens[2];
-    if (g1 >= 1 && g2 >= 1) {
-      out.push([...parts[0], fillSeg(g1), ...parts[1], fillSeg(g2), ...parts[2]]);
+    if (g1 >= pl + pr + 1 && g2 >= pl + pr + 1) {
+      out.push([...parts[0], ...fillSeg(g1), ...parts[1], ...fillSeg(g2), ...parts[2]]);
       return;
     }
   }
@@ -360,10 +374,19 @@ function layoutRow(w, cols, out) {
   let extra = slack - base * gaps;
   const line = [];
   parts.forEach((p, i) => {
-    if (i) line.push(fillSeg(base + (extra-- > 0 ? 1 : 0)));
+    if (i) line.push(...fillSeg(base + (extra-- > 0 ? 1 : 0)));
     line.push(...p);
   });
   out.push(line);
+}
+
+/** pad: number (both sides of the fill) or [after-left, before-right]. */
+function normPad(pad) {
+  if (typeof pad === 'number') return [Math.max(0, Math.floor(pad)), Math.max(0, Math.floor(pad))];
+  if (Array.isArray(pad)) {
+    return [Math.max(0, Math.floor(pad[0] ?? 0)), Math.max(0, Math.floor(pad[1] ?? 0))];
+  }
+  return [0, 0];
 }
 
 /** Fallback cell shape (charW / lineH) when the caller can't measure one. */

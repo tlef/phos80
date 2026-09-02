@@ -62,6 +62,11 @@ export interface RowWidget extends WidgetBase {
   parts: string[];
   /** Gap fill character; default ' '. */
   fill?: string;
+  /**
+   * Space cells between a part and the fill: n for both sides of every fill
+   * run, or [after the left part, before the right part]. Default 0.
+   */
+  pad?: number | [number, number];
   /** Colour for the fill; non-space fills are dim by default. */
   fillColor?: ColorName;
 }

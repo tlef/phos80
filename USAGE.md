@@ -44,7 +44,7 @@ Every command the visitor types (or button they click) is passed to your `transp
 A status line or a dot-leader index is a `row`:
 
 ```json
-{ "type": "row", "parts": ["[b]help[/b]", "this screen"], "fill": "." }
+{ "type": "row", "parts": ["[b]help[/b]", "this screen"], "fill": ".", "pad": 1 }
 ```
 
 Full vocabulary and rules: [PROTOCOL.md](PROTOCOL.md).

@@ -58,9 +58,9 @@ Side-by-side children — the terminal's flexbox. Each child is one column, laid
 
 ### row
 ```jsonc
-{ "type": "row", "parts": ["[b]help[/b]", "this screen"], "fill": ".", "fillColor": "brblack" }
+{ "type": "row", "parts": ["[b]help[/b]", "this screen"], "fill": ".", "pad": 1, "fillColor": "brblack" }
 ```
-One line with its parts pushed to the edges — the status-bar / dot-leader idiom. The first part is flush left, the last flush right, and with exactly three parts the middle one is centred; remaining gaps are filled with `fill` (default a space; non-space fills render dim unless `fillColor` is given). Unlike `columns`, widths come from the content rather than a proportional split, so a short right-hand value never squeezes the left. If the parts can't fit on one line they stack, each keeping its edge alignment.
+One line with its parts pushed to the edges — the status-bar / dot-leader idiom. The first part is flush left, the last flush right, and with exactly three parts the middle one is centred; remaining gaps are filled with `fill` (default a space; non-space fills render dim unless `fillColor` is given). `pad` puts space cells between a part and the fill: `1` on both sides of every fill run, or `[after, before]` — after the part on the fill's left, before the part on its right — so `help`, `this screen` with `"fill": ".", "pad": 1` gives `help ...... this screen` without spaces in the content. Unlike `columns`, widths come from the content rather than a proportional split, so a short right-hand value never squeezes the left. If the parts can't fit on one line they stack, each keeping its edge alignment.
 
 ### buttons
 ```jsonc
