@@ -234,6 +234,9 @@ function layoutWidget(w, cols, out, opts) {
     case 'image':
       layoutImage(w, cols, out, opts);
       break;
+    case 'vector':
+      layoutVector(w, cols, out, opts);
+      break;
     case 'columns':
       layoutColumns(w, cols, out, opts);
       break;
@@ -390,7 +393,9 @@ function imageRows(w, cells, opts) {
  * columns stay row-aligned beside it, and the width invariant is untouched —
  * the renderer paints one <img> over the reserved area.
  *   { type: 'image', src, alt?, width?, height?, aspect?, align?,
- *     treatment?: 'phosphor'|'pixel'|'plain', link? }
+ *     focus?: [x, y], treatment?: 'phosphor'|'pixel'|'plain', link? }
+ * `focus` (fractions of the image's width/height) is the point the crop
+ * keeps in view when the reserved rows don't match the image's shape.
  */
 function layoutImage(w, cols, out, opts) {
   if (!w.src) return;
@@ -403,6 +408,7 @@ function layoutImage(w, cols, out, opts) {
       src: String(w.src),
       alt: w.alt ?? '',
       rows,
+      focus: focusPoint(w.focus),
       treatment: w.treatment,
       link: w.link,
     },
@@ -410,6 +416,108 @@ function layoutImage(w, cols, out, opts) {
   out.push(padSegs([anchor], cols, w.align));
   // Remaining rows are plain reserved cells, padded identically so the
   // rectangle stays flush under the anchor row.
+  for (let i = 1; i < rows; i++) {
+    out.push(padSegs([seg(spaces(cells))], cols, w.align));
+  }
+}
+
+/** [x, y] with both finite → clamped to 0..1; anything else → null. */
+function focusPoint(f) {
+  if (!Array.isArray(f) || !Number.isFinite(f[0]) || !Number.isFinite(f[1])) return null;
+  const clamp = (v) => Math.min(1, Math.max(0, v));
+  return [clamp(f[0]), clamp(f[1])];
+}
+
+const finiteList = (a, n) => Array.isArray(a) && a.length >= n && a.slice(0, n).every(Number.isFinite);
+
+/**
+ * The window of a drawing that a box of a given pixel aspect ratio shows —
+ * a viewBox, computed from the model so it re-crops at every column count
+ * exactly the way text re-wraps.
+ *   viewBox: [x, y, w, h] — the drawing's own coordinate space.
+ *   focus:   [x, y, w, h] — the region that must stay visible: the window is
+ *            the smallest one at `aspect` that contains it (so a small focus
+ *            zooms in, a large one zooms out). Absent → the whole drawing.
+ *            [x, y] — a point: the drawing covers the box (largest window
+ *            that fits inside it), positioned to keep the point central.
+ *   aspect:  box width ÷ height in pixels.
+ * The window is centred on the focus, then slid back inside the drawing
+ * when it fits (the same clamp `object-position` applies to a raster);
+ * if it's larger than the drawing on an axis, it's centred on that axis.
+ */
+export function vectorWindow(viewBox, focus, aspect) {
+  const [vx, vy, vw, vh] = viewBox;
+  const A = aspect > 0 ? aspect : 1;
+  let fx, fy, fw, fh;
+  if (finiteList(focus, 4)) {
+    [fx, fy] = focus;
+    fw = Math.max(0, focus[2]);
+    fh = Math.max(0, focus[3]);
+  } else if (finiteList(focus, 2)) {
+    [fx, fy] = focus;
+    fw = fh = 0;
+  } else {
+    [fx, fy, fw, fh] = viewBox;
+  }
+  let ww, wh;
+  if (fw <= 0 && fh <= 0) {
+    // Point focus → cover: the largest window the drawing can fill.
+    if (vw / vh > A) [ww, wh] = [vh * A, vh];
+    else [ww, wh] = [vw, vw / A];
+  } else if (fw > fh * A) [ww, wh] = [fw, fw / A];
+  else [ww, wh] = [fh * A, fh];
+  const place = (c, size, v0, v1) =>
+    size <= v1 - v0 ? Math.min(v1 - size, Math.max(v0, c - size / 2)) : v0 + (v1 - v0 - size) / 2;
+  return [
+    place(fx + fw / 2, ww, vx, vx + vw),
+    place(fy + fh / 2, wh, vy, vy + vh),
+    ww,
+    wh,
+  ];
+}
+
+/**
+ * Vector drawing, grid-snapped and art-directed. Like `image` it reserves a
+ * real rectangle of cells (`width` cells wide, default the full width; N rows
+ * tall from `height`, else from the drawing's shape), but the picture is
+ * shapes in a `viewBox`, rendered inline as SVG in the theme's colours. The
+ * viewBox the renderer gets is the crop window this layout picks for the
+ * box's pixel shape (cells × cellRatio : rows) around `focus` — see
+ * vectorWindow — so narrowing the terminal re-crops the drawing instead of
+ * squashing it.
+ *   { type: 'vector', viewBox: [x, y, w, h], shapes: Shape[], alt?,
+ *     width?, height?, focus?: [x, y] | [x, y, w, h], align?, link? }
+ * Shape (one geometry key + optional style):
+ *   { path: 'M…' } | { points: [[x, y]…], close? } | { line: [x1, y1, x2, y2] }
+ *   | { rect: [x, y, w, h] } | { circle: [cx, cy, r] }
+ *   | { text: '…', at: [x, y], size?: rows, anchor?: 'start'|'middle'|'end', bold? }
+ *   style: stroke?: color|'none', fill?: color|'none', strokeWidth?: px, dash?, dim?
+ */
+function layoutVector(w, cols, out, opts) {
+  if (!finiteList(w.viewBox, 4) || !(w.viewBox[2] > 0) || !(w.viewBox[3] > 0)) return;
+  const viewBox = w.viewBox.slice(0, 4);
+  const cells = Math.max(4, Math.min(cols, w.width ?? cols));
+  const ratio = opts?.cellRatio > 0 ? opts.cellRatio : DEFAULT_CELL_RATIO;
+  const rows =
+    Number.isFinite(w.height) && w.height > 0
+      ? Math.max(1, Math.round(w.height))
+      : Math.max(1, Math.round((cells * ratio * viewBox[3]) / viewBox[2]));
+  const win = vectorWindow(viewBox, w.focus, (cells * ratio) / rows);
+  const anchor = {
+    text: ' '.repeat(cells),
+    style: {},
+    vector: {
+      viewBox: win,
+      // One terminal row, in drawing units at this crop: text sizes and
+      // anything else that should stay grid-relative scale by it.
+      rowUnit: win[3] / rows,
+      shapes: Array.isArray(w.shapes) ? w.shapes : [],
+      alt: w.alt ?? '',
+      rows,
+      link: w.link,
+    },
+  };
+  out.push(padSegs([anchor], cols, w.align));
   for (let i = 1; i < rows; i++) {
     out.push(padSegs([seg(spaces(cells))], cols, w.align));
   }

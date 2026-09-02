@@ -78,7 +78,31 @@ Inline image occupying a **rectangle of the grid**: `width` cells wide (default 
 
 Supply `height` or `aspect` for anything rendered server-side — otherwise the prerender guesses and the client reflows once it has measured the file (the same one-time correction the 80-column prerender makes for width).
 
-`treatment`: `phosphor` (default — monochrome, tinted to the theme foreground, like it's drawn on the tube), `pixel` (adds chunky pixelation), `plain` (untouched). `link` wraps the image (URL or command, same rules as `[link=…]`). `src` may be http(s) or a scheme-less relative path. `alt` is required for accessibility and SEO. Images render through SSR as normal `<img>` tags; they are the one widget that isn't literal characters, so they copy as a blank rectangle.
+`focus: [x, y]` (fractions 0–1 of the image's width and height) marks the subject: when `height` gives the image a different shape than its own, the cover-crop keeps that point in view instead of the centre — art direction for rasters. For a drawing that should re-crop *properly* at every width, see `vector`.
+
+`treatment`: `phosphor` (default — monochrome, tinted to the theme foreground, like it's drawn on the tube), `pixel` (adds chunky pixelation), `plain` (untouched). `link` wraps the image (URL or command, same rules as `[link=…]`). `src` may be http(s) or a scheme-less relative path. `alt` is required for accessibility and SEO. Images render through SSR as normal `<img>` tags; they and `vector` are the widgets that aren't literal characters, so they copy as a blank rectangle.
+
+### vector
+```jsonc
+{ "type": "vector", "viewBox": [0, 0, 1000, 600], "alt": "Survey chart of the island",
+  "height": 18, "focus": [420, 280, 110, 110], "align": "center",
+  "shapes": [
+    { "points": [[180, 300], [220, 200], [300, 140]], "close": true, "fill": "bg" },
+    { "path": "M 560 320 L 590 270 L 620 320", "dim": true },
+    { "line": [700, 560, 900, 560] },
+    { "rect": [40, 500, 300, 70] },
+    { "circle": [470, 330, 6], "fill": "bryellow", "stroke": "none" },
+    { "points": [[250, 310], [470, 330]], "stroke": "cyan", "dash": true },
+    { "text": "PHOSPHOR CITY", "at": [482, 330], "bold": true }
+  ] }
+```
+A drawing made of shapes, rendered inline as SVG in the theme's palette — the vector-display counterpart of `image`. It reserves a rectangle of the grid the same way (`width` cells, default the full width; `height` rows, else derived from the viewBox's shape), and layout computes, from the model, which **window** of the drawing that rectangle shows. The crop is re-chosen at every column count exactly as text re-wraps, so a narrower terminal shows a different part of the drawing rather than a squashed one. Because the picture is recoloured from the palette, it follows `theme` changes like any text.
+
+`focus` steers the crop, in `viewBox` units. `[x, y, w, h]` is the region that must stay visible: the window is the smallest one of the box's shape that contains it, so a small focus zooms in and a large one zooms out. `[x, y]` is a point: the drawing covers the box and the point stays as central as the drawing's edges allow. Absent means the whole drawing. An explicit `height` is what makes cropping happen at all — without one the rows follow the drawing's shape and nothing needs cropping.
+
+Shapes carry one geometry key each: `path` (SVG path data), `points` (a polyline; `close: true` makes it a polygon), `line` `[x1, y1, x2, y2]`, `rect` `[x, y, w, h]`, `circle` `[cx, cy, r]`, or `text` with `at: [x, y]` (`anchor` start|middle|end, `bold`, `size` in terminal rows — default 1, so labels stay text-sized at every zoom, and they get a background halo so they read over linework). Every shape takes `stroke` and `fill` — a palette name, `bg`, or `none`; strokes default to `amber`, fills to `none` — plus `strokeWidth` in pixels (default 1.5; strokes keep their width at every zoom, like glyph stems), `dash`, and `dim`.
+
+Shapes are data, not markup: the renderer emits a fixed vocabulary of SVG elements with validated numbers, escaped strings and path data limited to the path-command alphabet, so no element, attribute, script or URL can pass through. `alt` names the drawing for assistive tech and SEO. `link` as for `image`. Renders identically through SSR (with the 0.5 cell-ratio guess the client corrects on load).
 
 ### rule
 ```jsonc

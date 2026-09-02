@@ -5,6 +5,8 @@
 // Responses are Docs: { widgets: [...] } with BBCode-ish inline markup in
 // text content (see bbcode.js for the tag whitelist).
 
+import { ISLAND_CHART, CHART_FOCUS } from './map.js';
+
 const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const PALETTE_ROW_1 = ['black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white'];
@@ -119,6 +121,7 @@ const CANNED = {
             ['[brwhite][b]effects[/b][/brwhite] [dim]…[/dim]', 'CRT effects, e.g. [green]scanlines 0.5[/green]'],
             ['[brwhite][b]speed[/b][/brwhite] [dim]<n>[/dim]', 'typewriter cps, [green]off[/green] or [green]default[/green]'],
             ['[brwhite][b]poster[/b][/brwhite] [dim]<t>[/dim]', 'inline image + treatments'],
+            ['[brwhite][b]map[/b][/brwhite] [dim]<w>[/dim]', 'a vector chart that re-crops, not squashes'],
             ['[brwhite][b]code[/b][/brwhite]', 'a source listing that never reflows'],
             ['[brwhite][b]borders[/b][/brwhite] [dim]<s>[/dim]', '[green]unicode[/green] or [green]ascii[/green] frames'],
             ['[brwhite][b]scrolling[/b][/brwhite] [dim]<s>[/dim]', '[green]document[/green] or [green]viewport[/green]'],
@@ -212,6 +215,51 @@ const CANNED = {
             { label: 'PIXEL', command: 'poster pixel' },
             { label: 'PLAIN', command: 'poster plain' },
           ],
+        },
+      ],
+    };
+  },
+
+  map: (args) => {
+    const where = args[0] in CHART_FOCUS ? args[0] : 'island';
+    return {
+      widgets: [
+        {
+          type: 'frame',
+          color: 'cyan',
+          title: '[bryellow]HYDROGRAPHIC OFFICE[/bryellow]',
+          children: [
+            {
+              // A drawing as data: shapes in a viewBox, coloured from the
+              // palette. The fixed `height` gives it a band of rows; `focus`
+              // tells layout what that band must keep in view, and the crop
+              // is recomputed at every width — resize and watch it re-frame
+              // rather than squash. `theme green` recolours it.
+              ...ISLAND_CHART,
+              height: 18,
+              focus: CHART_FOCUS[where],
+            },
+            {
+              type: 'row',
+              parts: [
+                `[dim]focus:[/dim] [green]${where}[/green]`,
+                '[dim]18 rows · full width · re-cropped on resize[/dim]',
+              ],
+            },
+          ],
+        },
+        {
+          type: 'buttons',
+          align: 'center',
+          items: Object.keys(CHART_FOCUS).map((k) => ({ label: k.toUpperCase(), command: `map ${k}` })),
+        },
+        {
+          type: 'text',
+          margin: [2, 2],
+          content:
+            '[dim]The chart is inline SVG built from a shape list — no raster, no ' +
+            'markup. Strokes stay one pen-width at every zoom and labels stay ' +
+            'text-sized; only the window moves.[/dim]',
         },
       ],
     };

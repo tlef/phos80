@@ -244,6 +244,38 @@
   height: 0;
 }
 
+/* 'vector' widget: inline SVG drawn in the palette. Strokes keep their pixel
+   width at every crop (like glyph stems), labels get a background halo so
+   they read over linework, and the drawing glows like the text around it. */
+.p80-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: inherit;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(
+    0 0 2px color-mix(in srgb, currentColor min(100%, calc(60% * var(--p80-glow, 1))), transparent)
+  );
+}
+
+.p80-svg * {
+  vector-effect: non-scaling-stroke;
+}
+
+.p80-svg text {
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 3px;
+  dominant-baseline: central;
+}
+
+.p80-fx-noglow .p80-svg {
+  filter: none;
+}
+
 /* Buttons & command-links: real focusable elements drawn as characters */
 .p80-btn {
   font: inherit;

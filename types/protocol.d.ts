@@ -97,9 +97,74 @@ export interface ImageWidget extends WidgetBase {
    */
   aspect?: number;
   align?: Align;
+  /**
+   * The subject, as fractions (0–1) of the image's width and height. When
+   * `height` gives the image a different shape than its own, the cover-crop
+   * keeps this point in view instead of the centre.
+   */
+  focus?: [number, number];
   /** 'phosphor' (default): monochrome, theme-tinted. */
   treatment?: 'phosphor' | 'pixel' | 'plain';
   /** Wraps the image; URL or command (same rules as [link=…]). */
+  link?: string;
+}
+
+/** Palette name, the background, or nothing. */
+export type VectorColor = ColorName | 'bg' | 'none';
+
+interface ShapeStyle {
+  /** Default 'amber' (the theme foreground). */
+  stroke?: VectorColor;
+  /** Default 'none'. */
+  fill?: VectorColor;
+  /** In pixels, constant at every zoom (default 1.5). */
+  strokeWidth?: number;
+  dash?: boolean;
+  dim?: boolean;
+}
+
+/** One geometry key per shape, in viewBox units. */
+export type VectorShape =
+  | (ShapeStyle & { /** SVG path data (M/L/C/Q/A/Z…), nothing else. */ path: string })
+  | (ShapeStyle & { /** Polyline; `close` makes it a polygon. */ points: [number, number][]; close?: boolean })
+  | (ShapeStyle & { line: [number, number, number, number] })
+  | (ShapeStyle & { rect: [number, number, number, number] })
+  | (ShapeStyle & { circle: [number, number, number] })
+  | {
+      text: string;
+      at: [number, number];
+      /** In terminal rows (default 1) — labels stay text-sized at every crop. */
+      size?: number;
+      anchor?: 'start' | 'middle' | 'end';
+      color?: VectorColor;
+      bold?: boolean;
+      dim?: boolean;
+    };
+
+export interface VectorWidget extends WidgetBase {
+  type: 'vector';
+  /** The drawing's coordinate space: [x, y, width, height]. */
+  viewBox: [number, number, number, number];
+  shapes: VectorShape[];
+  /** Describes the drawing for assistive tech / SEO. */
+  alt?: string;
+  /** Width in character cells; default the full width, clamped to viewport. */
+  width?: number;
+  /**
+   * Height in rows. Omit to derive it from the viewBox's shape (no cropping
+   * then); set it to give the drawing a fixed band and let `focus` choose
+   * what that band shows at each width.
+   */
+  height?: number;
+  /**
+   * What the crop keeps in view, in viewBox units. A rect [x, y, w, h] must
+   * stay visible (the window is the smallest one of the box's shape that
+   * contains it); a point [x, y] means cover the box and keep the point as
+   * central as the edges allow; absent means the whole drawing.
+   */
+  focus?: [number, number] | [number, number, number, number];
+  align?: Align;
+  /** Wraps the drawing; URL or command (same rules as [link=…]). */
   link?: string;
 }
 
@@ -122,6 +187,7 @@ export type Widget =
   | RowWidget
   | ButtonsWidget
   | ImageWidget
+  | VectorWidget
   | RuleWidget
   | SpacerWidget;
 
